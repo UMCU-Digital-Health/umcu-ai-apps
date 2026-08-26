@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "umcu_ai_apps"
+version = "0.1.0"
+authors = [
+    { name = "Laura Veerhoek", email = "l.p.veerhoek@umcutrecht.nl" },
+]
+description = "General repository for general apps made by the UMC Utrecht AI team."
+readme = "README.md"
+requires-python = ">=3.12"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "ipykernel>=6.29.2",
+    "pytest>=8.0.1",
+    "nbstripout>=0.7.1",
+    "pytest-cov>=5.0.0",
+    "rsconnect-python>=1.24.0",
+]
+lint = ["ruff>=0.7.1"]
+
+[tool.uv]
+default-groups = ["dev", "lint"]
+
+[tool.ruff]
+src = ["src"]
+
+[tool.ruff.lint]
+select = [
+    "B",    # flake8-bugbear
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "C90",  # mccabe complexity
+    "I",    # isort
+    "ERA",  # Eradicate (commented out code)
+    "A",    # flake8-builtins (overwriting python builtins)
+    "PTH",  # flake8-use-pathlib
+    "N",    # pep8-naming
+    "D101", # pydocstyle: Missing docstring in class
+    "D102", # pydocstyle: Missing docstring in method
+    "D103", # pydocstyle: Missing docstring in function
+]
+
+[tool.ruff.lint.pep8-naming]
+ignore-names = ["X"] # Allow the use of X as variable in scikit-learn
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["D101", "D102", "D103"] # Allow unit tests without docstring
