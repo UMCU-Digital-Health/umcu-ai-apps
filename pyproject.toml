@@ -15,7 +15,12 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
-dependencies = []
+dependencies = [
+    "dash>=4.4.1",
+    "dotenv>=0.9.9",
+    "sqlalchemy>=2.0.52",
+    "umcu-ai-utils>=0.2.5",
+]
 
 [dependency-groups]
 dev = [
