@@ -32,8 +32,6 @@ def create_layout(
         children=[
             html.H1("LLM Evaluatie Applicatie"),
             dcc.Store(id="selection-store", data=""),
-            dcc.Store(id="markings-store", data=[]),
-            # ── Reference selector ────────────────────────────
             html.Div(
                 style={"marginBottom": "1.5rem"},
                 children=[
@@ -58,7 +56,6 @@ def create_layout(
                     ),
                 ],
             ),
-            # ── Two-column text panels ────────────────────────
             html.Div(
                 style={
                     "display": "flex",

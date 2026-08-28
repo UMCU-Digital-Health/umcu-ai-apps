@@ -23,6 +23,7 @@ from umcu_ai_apps.llm_evaluation.helper import (
     full_rebuild,
     is_duplicate,
     load_dropdown_options,
+    load_reference,
     save_marking_to_db,
 )
 from umcu_ai_apps.llm_evaluation.layout import create_layout
@@ -43,8 +44,6 @@ dropdown_options = load_dropdown_options(SESSIONMAKER)
 
 app.layout = create_layout(dropdown_options)
 
-# ── Client-side selection capture ─────────────────────────────
-
 app.clientside_callback(
     ClientsideFunction(namespace="clientside", function_name="capture_selection"),
     Output("selection-store", "data"),
@@ -54,16 +53,8 @@ app.clientside_callback(
     prevent_initial_call=True,
 )
 
-SHARED_OUTPUTS = [
-    Output("markings-store", "data", allow_duplicate=True),
-    Output("source-text", "children", allow_duplicate=True),
-    Output("source-text-errors", "children", allow_duplicate=True),
-    Output("table-container", "children", allow_duplicate=True),
-]
-
 
 @app.callback(
-    Output("markings-store", "data"),
     Output("source-text", "children"),
     Output("source-text-errors", "children"),
     Output("table-container", "children"),
@@ -86,22 +77,22 @@ def handle_reference_change(ref_id: int) -> tuple:
     Returns
     -------
     tuple
-        Loaded markings, rendered text panels, table, and cleared status
-        messages.
+        Rendered text panels, table, and cleared status messages.
     """
     return (*full_rebuild(SESSIONMAKER, ref_id), "", "")
 
 
 @app.callback(
-    *SHARED_OUTPUTS,
+    Output("source-text", "children", allow_duplicate=True),
+    Output("source-text-errors", "children", allow_duplicate=True),
+    Output("table-container", "children", allow_duplicate=True),
     Output("status-left", "children", allow_duplicate=True),
     Output("status-right", "children", allow_duplicate=True),
     Input("selection-store", "data"),
-    State("markings-store", "data"),
     State("ref-dropdown", "value"),
     prevent_initial_call=True,
 )
-def handle_save(raw: str, markings: list[dict], ref_id: int) -> tuple:
+def handle_save(raw: str, ref_id: int) -> tuple:
     """Process a new selection captured by the client-side callback.
 
     Validates the payload, checks for duplicates, saves the marking to
@@ -113,20 +104,18 @@ def handle_save(raw: str, markings: list[dict], ref_id: int) -> tuple:
         JSON string produced by the client-side ``capture_selection``
         callback. Contains ``"text"``, ``"start"``, ``"end"``, and
         ``"type"`` keys, or is empty when no text was selected.
-    markings : list[dict]
-        The current list of annotation entries (from the store).
     ref_id : int
         The currently selected Reference.id (read from the dropdown).
 
     Returns
     -------
     tuple
-        A 6-element tuple matching the callback outputs: the four shared
-        outputs from ``full_rebuild`` plus per-column status messages.
+        A 5-element tuple: the three outputs from ``full_rebuild``
+        plus per-column status messages.
     """
     if not raw:
         return (
-            *([no_update] * 4),
+            *([no_update] * 3),
             html.Span("⚠ Selecteer eerst tekst.", style={"color": "orange"}),
             html.Span("⚠ Selecteer eerst tekst.", style={"color": "orange"}),
         )
@@ -135,19 +124,20 @@ def handle_save(raw: str, markings: list[dict], ref_id: int) -> tuple:
 
     if not sel:
         return (
-            *([no_update] * 4),
+            *([no_update] * 3),
             html.Span("⚠ Selecteer eerst tekst.", style={"color": "orange"}),
             html.Span("⚠ Selecteer eerst tekst.", style={"color": "orange"}),
         )
 
     sel_type = sel.pop("type")
 
+    markings = load_reference(SESSIONMAKER, ref_id)["markings"]
     if is_duplicate(sel, markings):
         msg = html.Span("ℹ Al gemarkeerd.", style={"color": "#3b82f6"})
         if sel_type == "missing":
-            return *([no_update] * 4), msg, no_update
+            return *([no_update] * 3), msg, no_update
         else:
-            return *([no_update] * 4), no_update, msg
+            return *([no_update] * 3), no_update, msg
 
     save_marking_to_db(SESSIONMAKER, ref_id, sel_type, sel)
 
@@ -157,35 +147,34 @@ def handle_save(raw: str, markings: list[dict], ref_id: int) -> tuple:
 
 
 @app.callback(
-    *SHARED_OUTPUTS,
+    Output("source-text", "children", allow_duplicate=True),
+    Output("source-text-errors", "children", allow_duplicate=True),
+    Output("table-container", "children", allow_duplicate=True),
     Input({"type": "delete-btn", "index": ALL}, "n_clicks"),
-    State("markings-store", "data"),
     State("ref-dropdown", "value"),
     prevent_initial_call=True,
 )
-def handle_delete(n_clicks_list: list[int], markings: list[dict], ref_id: int) -> tuple:
+def handle_delete(n_clicks_list: list[int], ref_id: int) -> tuple:
     """Remove a single marking when its delete button is clicked.
 
     Parameters
     ----------
     n_clicks_list : list[int]
         Click counts for every delete button currently rendered.
-    markings : list[dict]
-        The current list of annotation entries (from the store).
     ref_id : int
         The currently selected Reference.id (read from the dropdown).
 
     Returns
     -------
     tuple
-        The four shared outputs from ``full_rebuild``.
+        The three outputs from ``full_rebuild``.
     """
     if not any(n_clicks_list):
-        return [no_update] * 4
+        return [no_update] * 3
 
     triggered = ctx.triggered_id
     if not triggered:
-        return [no_update] * 4
+        return [no_update] * 3
 
     delete_marking_from_db(SESSIONMAKER, triggered["index"])
 
