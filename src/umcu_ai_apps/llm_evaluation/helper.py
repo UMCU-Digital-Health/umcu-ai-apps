@@ -33,28 +33,6 @@ HIGHLIGHT_STYLING = {
     },
 }
 
-COLUMN_STYLE = {
-    "flex": "1",
-    "height": "400px",
-    "overflowY": "auto",
-    "padding": "1.2rem",
-    "background": "#fafafa",
-    "border": "1px solid #ddd",
-    "borderRadius": "8px",
-    "fontSize": "1.05rem",
-    "lineHeight": "1.8",
-    "userSelect": "text",
-    "cursor": "text",
-}
-
-BTN_BASE = {
-    "border": "none",
-    "padding": "0.5rem 1.2rem",
-    "borderRadius": "8px",
-    "fontSize": "0.95rem",
-    "cursor": "pointer",
-}
-
 
 # ── Database helpers ────────────────────────────────────────────
 

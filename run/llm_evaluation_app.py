@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from typing import Literal, cast
 
+import dash_bootstrap_components as dbc
 from dash import (
     ALL,
     ClientsideFunction,
@@ -39,6 +40,7 @@ SESSIONMAKER = sessionmaker(
 app = Dash(
     __name__,
     assets_folder=Path(__file__).parent / "../src/umcu_ai_apps/llm_evaluation",
+    external_stylesheets=[dbc.themes.BOOTSTRAP],
 )
 dropdown_options = load_dropdown_options(SESSIONMAKER)
 
