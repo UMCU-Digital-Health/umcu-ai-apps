@@ -466,9 +466,7 @@ def build_table(markings: list[dict]) -> html.P | html.Table:
 def full_rebuild(
     session_factory: sessionmaker,
     ref_id: int,
-) -> tuple[
-    list[dict], list[str | html.Mark], list[str | html.Mark], html.P | html.Table
-]:
+) -> tuple[list[str | html.Mark], list[str | html.Mark], html.P | html.Table]:
     """Reload the reference from the database and recompute the full UI.
 
     This is the single source of truth after any mutation: it queries
@@ -484,8 +482,7 @@ def full_rebuild(
 
     Returns
     -------
-    markings : list[dict]
-        The markings as loaded from the database.
+
     left_children : list[str | html.Mark]
         Updated children for the left (context) text panel.
     right_children : list[str | html.Mark]
@@ -496,7 +493,6 @@ def full_rebuild(
     ref = load_reference(session_factory, ref_id)
     markings = ref["markings"]
     return (
-        markings,
         rebuild_panel(ref["context"], markings, {"missing"}),
         rebuild_panel(ref["llm"], markings, {"error", "trivial"}),
         build_table(markings),
