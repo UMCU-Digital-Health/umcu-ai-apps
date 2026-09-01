@@ -1,3 +1,12 @@
+"""This module contains the Dash app for the LLM evaluation tool.
+The app allows users to view LLM responses, mark issues in both the LLM responses and
+the reference text, and provide usability feedback. The app is built using Dash and
+Bootstrap, and it interacts with a database to store and retrieve markings and
+usability scores.
+In order to get data into the database that the app can use, run the
+`run/prep_llm_evaluation.py` module first.
+"""
+
 import json
 import os
 from pathlib import Path
