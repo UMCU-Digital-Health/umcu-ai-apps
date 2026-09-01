@@ -4,7 +4,7 @@ The main function of this database is to store logging, feedback and evaluation 
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
@@ -124,6 +124,8 @@ class Marking(Base):
     marking_start: Mapped[int]
     marking_end: Mapped[int]
     timestamp: Mapped[datetime] = mapped_column(DateTime)
+    is_severe: Mapped[bool] = mapped_column(Boolean, default=False)
+    comment: Mapped[str | None] = mapped_column(String, nullable=True, default=None)
 
     # Relationships
     user_relation: Mapped["User"] = relationship(

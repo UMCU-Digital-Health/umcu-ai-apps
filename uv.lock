@@ -1552,7 +1552,7 @@ requires-dist = [
     { name = "dash-bootstrap-components", specifier = ">=2.0.4" },
     { name = "dotenv", specifier = ">=0.9.9" },
     { name = "sqlalchemy", specifier = ">=2.0.52" },
-    { name = "umcu-ai-utils", specifier = ">=0.2.5" },
+    { name = "umcu-ai-utils", specifier = ">=0.3.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -1567,11 +1567,11 @@ lint = [{ name = "ruff", specifier = ">=0.7.1" }]
 
 [[package]]
 name = "umcu-ai-utils"
-version = "0.2.5"
+version = "0.3.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/6f/ad/b255020895d941a892629fd1fb16ed1c4e9eba6bead2e301db966b0193a2/umcu_ai_utils-0.2.5.tar.gz", hash = "sha256:89134fa14eda08108d8debd71a2d4710d2a84819720279b85569018c1798d10e", size = 2838, upload-time = "2026-08-06T10:02:45.882Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/11/1c/0bc2ebe0559c9291c84260d8cb9dee882c0df26773d212c769f464c7e05d/umcu_ai_utils-0.3.0.tar.gz", hash = "sha256:96d0f162da5b3e0c59cf9454c1cf651c5cf0e0581abc40742263d82804d32080", size = 3654, upload-time = "2026-09-01T11:06:18.293Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9a/7b/1d2d8e31543c56c96c3de5a6af08e825eeed13489c2a568da2bdcfa92aa0/umcu_ai_utils-0.2.5-py3-none-any.whl", hash = "sha256:a8dbf35727c9839411faf2058423eb2473b36de389d7da586d3506bc542696bd", size = 3746, upload-time = "2026-08-06T10:02:44.962Z" },
+    { url = "https://files.pythonhosted.org/packages/11/6a/43415a83f92ba4a0fe8c5d56b2cabe608d94d78933e50e2b3a9b0407809d/umcu_ai_utils-0.3.0-py3-none-any.whl", hash = "sha256:9685d5f051f5076548f694a350bb73a557dfdb562803138507dfb86446c7c24e", size = 5133, upload-time = "2026-09-01T11:06:17.541Z" },
 ]
 
 [[package]]

@@ -25,7 +25,11 @@ from umcu_ai_apps.llm_evaluation.helper import (
     is_duplicate,
     load_dropdown_options,
     load_reference,
+    load_usability_score,
     save_marking_to_db,
+    save_usability_assessment,
+    update_marking_comment,
+    update_marking_severity,
 )
 from umcu_ai_apps.llm_evaluation.layout import create_layout
 from umcu_ai_apps.llm_evaluation.models import (
@@ -52,16 +56,18 @@ app.clientside_callback(
     Input("save-btn", "n_clicks"),
     Input("error-btn", "n_clicks"),
     Input("trivial-btn", "n_clicks"),
+    Input("wording-btn", "n_clicks"),
     prevent_initial_call=True,
 )
 
 
 @app.callback(
-    Output("source-text", "children"),
-    Output("source-text-errors", "children"),
+    Output("context-text", "children"),
+    Output("llm-text", "children"),
     Output("table-container", "children"),
     Output("status-left", "children"),
     Output("status-right", "children"),
+    Output("usability-score", "value"),
     Input("ref-dropdown", "value"),
     prevent_initial_call=False,
 )
@@ -79,14 +85,20 @@ def handle_reference_change(ref_id: int) -> tuple:
     Returns
     -------
     tuple
-        Rendered text panels, table, and cleared status messages.
+        Rendered text panels, table, cleared status messages, and the
+        current user's usability score for this reference.
     """
-    return (*full_rebuild(SESSIONMAKER, ref_id), "", "")
+    return (
+        *full_rebuild(SESSIONMAKER, ref_id),
+        "",
+        "",
+        load_usability_score(SESSIONMAKER, ref_id),
+    )
 
 
 @app.callback(
-    Output("source-text", "children", allow_duplicate=True),
-    Output("source-text-errors", "children", allow_duplicate=True),
+    Output("context-text", "children", allow_duplicate=True),
+    Output("llm-text", "children", allow_duplicate=True),
     Output("table-container", "children", allow_duplicate=True),
     Output("status-left", "children", allow_duplicate=True),
     Output("status-right", "children", allow_duplicate=True),
@@ -131,7 +143,7 @@ def handle_save(raw: str, ref_id: int) -> tuple:
             html.Span("⚠ Selecteer eerst tekst.", style={"color": "orange"}),
         )
 
-    sel_type = sel.pop("type")
+    sel_type = sel["type"]
 
     markings = load_reference(SESSIONMAKER, ref_id)["markings"]
     if is_duplicate(sel, markings):
@@ -141,7 +153,7 @@ def handle_save(raw: str, ref_id: int) -> tuple:
         else:
             return *([no_update] * 3), no_update, msg
 
-    save_marking_to_db(SESSIONMAKER, ref_id, sel_type, sel)
+    save_marking_to_db(SESSIONMAKER, ref_id, sel)
 
     if sel_type == "missing":
         return (*full_rebuild(SESSIONMAKER, ref_id), "", no_update)
@@ -149,8 +161,8 @@ def handle_save(raw: str, ref_id: int) -> tuple:
 
 
 @app.callback(
-    Output("source-text", "children", allow_duplicate=True),
-    Output("source-text-errors", "children", allow_duplicate=True),
+    Output("context-text", "children", allow_duplicate=True),
+    Output("llm-text", "children", allow_duplicate=True),
     Output("table-container", "children", allow_duplicate=True),
     Input({"type": "delete-btn", "index": ALL}, "n_clicks"),
     State("ref-dropdown", "value"),
@@ -181,6 +193,69 @@ def handle_delete(n_clicks_list: list[int], ref_id: int) -> tuple:
     delete_marking_from_db(SESSIONMAKER, triggered["index"])
 
     return full_rebuild(SESSIONMAKER, ref_id)
+
+
+@app.callback(
+    Input({"type": "severe-checkbox", "index": ALL}, "value"),
+    prevent_initial_call=True,
+)
+def handle_severity_change(values: list[bool]) -> str:
+    """Persist a marking's "severe" flag when its checkbox is toggled.
+    There is no return value and Output, because the checkbox is already in the correct state in the UI and only the database needs to be updated.
+
+    Parameters
+    ----------
+    values : list[bool]
+        Checked state for every severity checkbox currently rendered.
+    """
+    triggered = ctx.triggered_id
+    if not triggered:
+        return no_update
+
+    is_severe = bool(ctx.triggered[0]["value"])
+    update_marking_severity(SESSIONMAKER, triggered["index"], is_severe)
+
+@app.callback(
+    Input({"type": "comment-input", "index": ALL}, "value"),
+    prevent_initial_call=True,
+)
+def handle_comment_change(values: list[str]):
+    """Persist a marking's comment when its input loses focus.
+    There is no return value and Output, because the checkbox is already in the correct state in the UI and only the database needs to be updated.
+
+    Parameters
+    ----------
+    values : list[str]
+        Current text for every comment input currently rendered.
+    """
+    triggered = ctx.triggered_id
+    if not triggered:
+        return no_update
+
+    comment = ctx.triggered[0]["value"] or ""
+    update_marking_comment(SESSIONMAKER, triggered["index"], comment)
+
+
+
+@app.callback(
+    Input("usability-score", "value"),
+    State("ref-dropdown", "value"),
+    prevent_initial_call=True,
+)
+def handle_usability_change(score: int | None, ref_id: int):
+    """Persist the current user's usability score as soon as it changes.
+
+    Parameters
+    ----------
+    score : int | None
+        The selected usability score, from 1 to 5.
+    ref_id : int
+        The currently selected Reference.id (read from the dropdown).
+    """
+    if score is None:
+        return
+    ref = load_reference(SESSIONMAKER, ref_id)
+    save_usability_assessment(SESSIONMAKER, ref["evaluation_item_id"], score)
 
 
 if __name__ == "__main__":

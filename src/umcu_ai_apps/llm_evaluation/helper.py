@@ -2,13 +2,15 @@ import json
 import logging
 from datetime import datetime
 
+import dash_bootstrap_components as dbc
 import flask
-from dash import html
+from dash import dcc, html
 from flask import Request
 from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
-
+from umcu_ai_utils.dash.authentication import get_user_email
 from umcu_ai_apps.llm_evaluation.models import (
+    AssessmentUsability,
     Marking,
     Reference,
     User,
@@ -31,48 +33,24 @@ HIGHLIGHT_STYLING = {
         "label": "Triviaal",
         "color": "#d5d5d5",
     },
+    "wording": {
+        "label": "Formulering",
+        "color": "#005A9C",
+    },
 }
 
 
 # ── Database helpers ────────────────────────────────────────────
 
-_USER_ID: int | None = None
-
-
-def get_user_email(req: Request) -> str:
-    """Get the user email from RStudio credentials.
-
-    Parameters
-    ----------
-    req : Request
-        The request object.
-
-    Returns
-    -------
-    str
-        The user's email.
-    """
-    credential_header = req.headers.get("RStudio-Connect-Credentials")
-    if not credential_header:
-        logger.warning("No credentials found in request headers")
-        return "No user"
-
-    credential_header = json.loads(credential_header)
-    user = credential_header.get("user").lower()
-    return user
-
 
 def _get_user_id(session_factory: sessionmaker) -> int:
-    """Return the DB id for the current user, resolving once and caching.
+    """Return the DB id for the current user
 
     Parameters
     ----------
     session_factory : sessionmaker
         SQLAlchemy session factory used to open a database session.
     """
-    global _USER_ID
-    if _USER_ID is not None:
-        return _USER_ID
     email = get_user_email(flask.request)
     with session_factory() as session:
         user = session.execute(
@@ -82,8 +60,7 @@ def _get_user_id(session_factory: sessionmaker) -> int:
             user = User(email=email)
             session.add(user)
             session.commit()
-        _USER_ID = user.id
-    return _USER_ID
+        return user.id
 
 
 def load_dropdown_options(session_factory: sessionmaker) -> list[dict]:
@@ -104,15 +81,13 @@ def load_dropdown_options(session_factory: sessionmaker) -> list[dict]:
                 "value": r.id,
             }
             for r in refs
-            if r.evaluation_item_relation is not None and r.context_relation is not None
         ]
 
 
 def load_reference(session_factory: sessionmaker, ref_id: int) -> dict:
-    """Load full reference data from the database.
+    """Load full data from the database for a specific reference with ref_id.
 
-    Returns context text, LLM response, internal IDs, and the current
-    user's markings — everything the UI needs in one query.
+    Returns context text, LLM response, internal IDs, and the markings.
 
     Parameters
     ----------
@@ -124,8 +99,8 @@ def load_reference(session_factory: sessionmaker, ref_id: int) -> dict:
     Returns
     -------
     dict
-        Keys: ``"context"``, ``"llm"``, ``"evaluation_item_id"``,
-        ``"context_id"``, ``"markings"``.
+        Keys: "context", "llm", "evaluation_item_id",
+        "context_id", "markings".
     """
     with session_factory() as session:
         ref = session.get(Reference, ref_id)
@@ -145,7 +120,6 @@ def load_reference(session_factory: sessionmaker, ref_id: int) -> dict:
             session.execute(
                 select(Marking).where(
                     Marking.evaluation_item_id == eval_item.id,
-                    Marking.user_id == _get_user_id(session_factory),
                 )
             )
             .scalars()
@@ -166,6 +140,8 @@ def load_reference(session_factory: sessionmaker, ref_id: int) -> dict:
                         "start": m.marking_start,
                         "end": m.marking_end,
                     },
+                    "is_severe": m.is_severe,
+                    "comment": m.comment or "",
                 }
                 for m in db_markings
             ],
@@ -175,7 +151,6 @@ def load_reference(session_factory: sessionmaker, ref_id: int) -> dict:
 def save_marking_to_db(
     session_factory: sessionmaker,
     ref_id: int,
-    marking_type: str,
     sel: dict,
 ) -> None:
     """Insert a new marking into the database.
@@ -186,10 +161,8 @@ def save_marking_to_db(
         SQLAlchemy session factory used to open a database session.
     ref_id : int
         The Reference.id this marking belongs to.
-    marking_type : str
-        One of ``"missing"``, ``"error"``, ``"trivial"``.
     sel : dict
-        Selection dict with ``"text"``, ``"start"``, ``"end"`` keys.
+        Selection dict with "text", "start", "end", and "type" keys.
     """
     with session_factory() as session:
         ref = session.get(Reference, ref_id)
@@ -197,7 +170,7 @@ def save_marking_to_db(
             user_id=_get_user_id(session_factory),
             evaluation_item_id=ref.evaluation_item_relation.id,
             context_id=ref.context_relation.id,
-            marking_type=marking_type,
+            marking_type=sel["type"],
             marking_text=sel["text"],
             marking_start=sel["start"],
             marking_end=sel["end"],
@@ -225,6 +198,122 @@ def delete_marking_from_db(
         if marking is not None:
             session.delete(marking)
             session.commit()
+
+
+def update_marking_severity(
+    session_factory: sessionmaker,
+    marking_id: int,
+    is_severe: bool,
+) -> None:
+    """Update the severity flag of a marking.
+
+    Parameters
+    ----------
+    session_factory : sessionmaker
+        SQLAlchemy session factory used to open a database session.
+    marking_id : int
+        The Marking.id to update.
+    is_severe : bool
+        Whether the marking should be flagged as severe.
+    """
+    with session_factory() as session:
+        marking = session.get(Marking, marking_id)
+        if marking is not None:
+            marking.is_severe = is_severe
+            session.commit()
+
+
+def update_marking_comment(
+    session_factory: sessionmaker,
+    marking_id: int,
+    comment: str,
+) -> None:
+    """Update the free-text comment of a marking.
+
+    Parameters
+    ----------
+    session_factory : sessionmaker
+        SQLAlchemy session factory used to open a database session.
+    marking_id : int
+        The Marking.id to update.
+    comment : str
+        The new comment text.
+    """
+    with session_factory() as session:
+        marking = session.get(Marking, marking_id)
+        if marking is not None:
+            marking.comment = comment or None
+            session.commit()
+
+
+def load_usability_score(session_factory: sessionmaker, ref_id: int) -> int | None:
+    """Fetch the shared usability score for a reference, if one exists.
+
+    Parameters
+    ----------
+    session_factory : sessionmaker
+        SQLAlchemy session factory used to open a database session.
+    ref_id : int
+        The Reference.id to look up.
+
+    Returns
+    -------
+    int | None
+        The usability score, or ``None`` if the item hasn't been rated yet.
+    """
+    with session_factory() as session:
+        ref = session.get(Reference, ref_id)
+        if ref is None:
+            return None
+
+        assessment = session.execute(
+            select(AssessmentUsability).where(
+                AssessmentUsability.evaluation_item_id
+                == ref.evaluation_item_relation.id,
+            )
+        ).scalar_one_or_none()
+
+        return assessment.usability_score if assessment is not None else None
+
+
+def save_usability_assessment(
+    session_factory: sessionmaker,
+    evaluation_item_id: int,
+    usability_score: int,
+) -> None:
+    """Create or update the current user's usability score for an item.
+
+    Parameters
+    ----------
+    session_factory : sessionmaker
+        SQLAlchemy session factory used to open a database session.
+    evaluation_item_id : int
+        The EvaluationItem.id being assessed.
+    usability_score : int
+        The usability score, from 1 to 5.
+    """
+    with session_factory() as session:
+        user_id = _get_user_id(session_factory)
+        assessment = session.execute(
+            select(AssessmentUsability).where(
+                AssessmentUsability.evaluation_item_id == evaluation_item_id,
+             ) 
+        ).scalar_one_or_none()
+
+        if assessment is not None:
+            assessment.usability_score = usability_score
+            assessment.timestamp = datetime.now()
+        else:
+            session.add(
+                AssessmentUsability(
+                    user_id=user_id,
+                    evaluation_item_id=evaluation_item_id,
+                    usability_score=usability_score,
+                    comments=None,
+                    timestamp=datetime.now(),
+                )
+            )
+        session.commit()
 
 
 # ── UI helpers ──────────────────────────────────────────────────
@@ -355,9 +444,7 @@ def is_duplicate(sel: dict, markings: list[dict]) -> bool:
 
 def build_table(markings: list[dict]) -> html.P | html.Table:
     """Build an HTML table summarising all saved selections.
-
-    Each row shows the entry's type label, selected text, and a delete
-    button.
+    Each row shows the entry's type label, selected text, a checkbox for severity, a comment field and a delete button.
 
     Parameters
     ----------
@@ -368,7 +455,7 @@ def build_table(markings: list[dict]) -> html.P | html.Table:
     -------
     html.P | html.Table
         A placeholder paragraph when *markings* is empty, or a fully
-        rendered ``html.Table`` otherwise.
+        rendered html.Table otherwise.
     """
     if not markings:
         return html.P("Nog geen selecties opgeslagen.", style={"color": "#999"})
@@ -397,7 +484,7 @@ def build_table(markings: list[dict]) -> html.P | html.Table:
                 [
                     html.Td(
                         meta["label"],
-                        style={**cell, "width": "20%"},
+                        style={**cell, "width": "16%"},
                     ),
                     html.Td(
                         html.Span(
@@ -405,6 +492,24 @@ def build_table(markings: list[dict]) -> html.P | html.Table:
                             style={"background": meta["color"], "width": "80%"},
                         ),
                         style=cell,
+                    ),
+                    html.Td(
+                        dbc.Checkbox(
+                            id={"type": "severe-checkbox", "index": entry["id"]},
+                            value=entry["is_severe"],
+                        ),
+                        style={**cell, "width": "8%", "textAlign": "center"},
+                    ),
+                    html.Td(
+                        dcc.Input(
+                            id={"type": "comment-input", "index": entry["id"]},
+                            type="text",
+                            value=entry["comment"],
+                            debounce=True,
+                            placeholder="Opmerking...",
+                            style={"width": "100%"},
+                        ),
+                        style={**cell, "width": "26%"},
                     ),
                     html.Td(
                         html.Button(
@@ -432,6 +537,8 @@ def build_table(markings: list[dict]) -> html.P | html.Table:
                     [
                         html.Th("Type", style=header),
                         html.Th("Selectie", style=header),
+                        html.Th("Ernstig", style=header),
+                        html.Th("Opmerking", style=header),
                         html.Th("", style={**header, "width": "3rem"}),
                     ]
                 )
@@ -472,6 +579,6 @@ def full_rebuild(
     markings = ref["markings"]
     return (
         rebuild_panel(ref["context"], markings, {"missing"}),
-        rebuild_panel(ref["llm"], markings, {"error", "trivial"}),
+        rebuild_panel(ref["llm"], markings, {"error", "trivial", "wording"}),
         build_table(markings),
     )

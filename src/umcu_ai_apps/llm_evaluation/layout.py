@@ -5,48 +5,7 @@ from umcu_ai_apps.llm_evaluation.helper import (
     HIGHLIGHT_STYLING,
     build_table,
 )
-
-
-def get_navbar(header_title: str, view_user: bool) -> dbc.NavbarSimple:
-    """Create and return a Bootstrap navbar.
-
-    Parameters
-    ----------
-    view_user : bool
-        Whether to display the logged in user information.
-
-    header_title : str
-        The title to display in the navbar.
-
-    Returns
-    -------
-    dbc.NavbarSimple
-        The created navbar.
-    """
-    navbar = dbc.NavbarSimple(
-        children=[
-            dbc.NavItem(
-                html.Div(
-                    id="logged_in_user",
-                    className="text-white me-5",
-                )
-            )
-            if view_user
-            else None,
-        ],
-        brand=[
-            html.Img(
-                src="https://www.umcutrecht.nl/images/logo-umcu.svg",
-                className="mb-2",
-            ),
-            header_title,
-        ],
-        color="#1191fa",
-        dark=True,
-        id="navbar",
-    )
-
-    return navbar
+from umcu_ai_utils.dash.layout import get_navbar
 
 
 def create_layout(
@@ -138,7 +97,7 @@ def create_layout(
                                         },
                                     ),
                                     html.Div(
-                                        id="source-text",
+                                        id="context-text",
                                         children=[],
                                         className="p-3 bg-light border rounded",
                                         style={
@@ -187,14 +146,55 @@ def create_layout(
                                     "flex": "1",
                                 },
                                 children=[
-                                    html.H3(
-                                        "LLM Resultaat",
+                                    html.Div(
                                         style={
+                                            "display": "flex",
+                                            "justifyContent": "space-between",
+                                            "alignItems": "center",
                                             "marginBottom": "0.5rem",
                                         },
+                                        children=[
+                                            html.H3(
+                                                "LLM Resultaat",
+                                                style={"margin": "0"},
+                                            ),
+                                            html.Div(
+                                                style={
+                                                    "display": "flex",
+                                                    "alignItems": "center",
+                                                    "gap": "0.4rem",
+                                                },
+                                                children=[
+                                                    html.Label(
+                                                        "Bruikbaarheid:",
+                                                        htmlFor="usability-score",
+                                                        style={
+                                                            "fontSize": "0.8rem",
+                                                            "fontWeight": "600",
+                                                            "margin": "0",
+                                                        },
+                                                    ),
+                                                    dbc.RadioItems(
+                                                        id="usability-score",
+                                                        options=[
+                                                            {
+                                                                "label": str(i),
+                                                                "value": i,
+                                                            }
+                                                            for i in range(1, 6)
+                                                        ],
+                                                        value=None,
+                                                        className="btn-group",
+                                                        inputClassName="btn-check",
+                                                        labelClassName="btn btn-outline-primary",
+                                                        labelCheckedClassName="active",
+                                                    ),
+                                                ],
+                                            ),
+                                        ],
                                     ),
                                     html.Div(
-                                        id="source-text-errors",
+                                        id="llm-text",
                                         children=[],
                                         className="p-3 bg-light border rounded",
                                         style={
@@ -238,6 +238,19 @@ def create_layout(
                                                     "borderColor": HIGHLIGHT_STYLING[
                                                         "trivial"
                                                     ]["color"],
+                                                },
+                                            ),
+                                            dbc.Button(
+                                                "Markeer als verkeerde formulering",
+                                                id="wording-btn",
+                                                n_clicks=0,
+                                                style={
+                                                    "backgroundColor": (
+                                                        HIGHLIGHT_STYLING["wording"]["color"]
+                                                    ),
+                                                    "borderColor": (
+                                                        HIGHLIGHT_STYLING["wording"]["color"]
+                                                    ),
                                                 },
                                             ),
                                         ],

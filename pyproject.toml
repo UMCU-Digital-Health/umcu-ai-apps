@@ -20,7 +20,7 @@ dependencies = [
     "dash-bootstrap-components>=2.0.4",
     "dotenv>=0.9.9",
     "sqlalchemy>=2.0.52",
-    "umcu-ai-utils>=0.2.5",
+    "umcu-ai-utils>=0.3.0",
 ]
 
 [dependency-groups]

@@ -8,13 +8,19 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
          * @param {number} n1 save-btn clicks
          * @param {number} n2 error-btn clicks
          * @param {number} n3 trivial-btn clicks
+         * @param {number} n4 wording-btn clicks
          * @returns {string|Object} JSON payload with text, start, end, type.
          */
-        capture_selection: function (n1, n2, n3) {
-            if (!n1 && !n2 && !n3) { return window.dash_clientside.no_update; }
+        capture_selection: function (n1, n2, n3, n4) {
+            if (!n1 && !n2 && !n3 && !n4) { return window.dash_clientside.no_update; }
 
             var prop_id = (dash_clientside.callback_context.triggered[0] || {}).prop_id || "";
-            var types = { "save-btn": "missing", "error-btn": "error", "trivial-btn": "trivial" };
+            var types = {
+                "save-btn": "missing",
+                "error-btn": "error",
+                "trivial-btn": "trivial",
+                "wording-btn": "wording",
+            };
             var type = types[prop_id.split(".")[0]] || "missing";
 
             var val = window._selCapture_missing || window._selCapture_review;
@@ -75,17 +81,17 @@ function _wireContainer(containerId, buttonIds, storageKey) {
 
 (function _initListeners() {
     function _setup() {
-        _wireContainer("source-text", ["save-btn"], "_selCapture_missing");
-        _wireContainer("source-text-errors", ["error-btn", "trivial-btn"], "_selCapture_review");
+        _wireContainer("context-text", ["save-btn"], "_selCapture_missing");
+        _wireContainer("llm-text", ["error-btn", "trivial-btn", "wording-btn"], "_selCapture_review");
     }
 
-    if (document.getElementById("source-text")) {
+    if (document.getElementById("context-text")) {
         _setup();
         return;
     }
 
     var observer = new MutationObserver(function (_, obs) {
-        if (document.getElementById("source-text")) {
+        if (document.getElementById("context-text")) {
             obs.disconnect();
             _setup();
         }
