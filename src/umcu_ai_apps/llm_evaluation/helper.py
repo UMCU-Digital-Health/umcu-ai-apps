@@ -1,14 +1,13 @@
-import json
 import logging
 from datetime import datetime
 
 import dash_bootstrap_components as dbc
 import flask
 from dash import dcc, html
-from flask import Request
 from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
 from umcu_ai_utils.dash.authentication import get_user_email
+
 from umcu_ai_apps.llm_evaluation.models import (
     AssessmentUsability,
     Marking,
@@ -20,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 # ── Styling ─────────────────────────────────────────────────────
 
-HIGHLIGHT_STYLING = {
+HIGHLIGHT_STYLE = {
     "missing": {
         "label": "Gemiste informatie",
         "color": "#1191FAA6",
@@ -31,11 +30,11 @@ HIGHLIGHT_STYLING = {
     },
     "trivial": {
         "label": "Triviaal",
-        "color": "#d5d5d5",
+        "color": "#005A9C80",
     },
     "wording": {
         "label": "Formulering",
-        "color": "#005A9C",
+        "color": "#d5d5d5",
     },
 }
 
@@ -297,7 +296,7 @@ def save_usability_assessment(
         assessment = session.execute(
             select(AssessmentUsability).where(
                 AssessmentUsability.evaluation_item_id == evaluation_item_id,
-             ) 
+            )
         ).scalar_one_or_none()
 
         if assessment is not None:
@@ -411,7 +410,7 @@ def rebuild_panel(
         [
             (
                 [e["sel"] for e in markings if e["type"] == t],
-                HIGHLIGHT_STYLING[t]["color"],
+                HIGHLIGHT_STYLE[t]["color"],
             )
             for t in show_types
         ],
@@ -444,7 +443,8 @@ def is_duplicate(sel: dict, markings: list[dict]) -> bool:
 
 def build_table(markings: list[dict]) -> html.P | html.Table:
     """Build an HTML table summarising all saved selections.
-    Each row shows the entry's type label, selected text, a checkbox for severity, a comment field and a delete button.
+    Each row shows the entry's type label, selected text, a checkbox for severity,
+    a comment field and a delete button.
 
     Parameters
     ----------
@@ -478,7 +478,7 @@ def build_table(markings: list[dict]) -> html.P | html.Table:
 
     rows = []
     for entry in markings:
-        meta = HIGHLIGHT_STYLING[entry["type"]]
+        meta = HIGHLIGHT_STYLE[entry["type"]]
         rows.append(
             html.Tr(
                 [

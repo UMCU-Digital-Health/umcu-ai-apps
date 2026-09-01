@@ -1,11 +1,11 @@
 import dash_bootstrap_components as dbc
 from dash import dcc, html
+from umcu_ai_utils.dash.layout import get_navbar
 
 from umcu_ai_apps.llm_evaluation.helper import (
-    HIGHLIGHT_STYLING,
+    HIGHLIGHT_STYLE,
     build_table,
 )
-from umcu_ai_utils.dash.layout import get_navbar
 
 
 def create_layout(
@@ -121,10 +121,10 @@ def create_layout(
                                                 id="save-btn",
                                                 n_clicks=0,
                                                 style={
-                                                    "backgroundColor": HIGHLIGHT_STYLING[
+                                                    "backgroundColor": HIGHLIGHT_STYLE[
                                                         "missing"
                                                     ]["color"],
-                                                    "borderColor": HIGHLIGHT_STYLING[
+                                                    "borderColor": HIGHLIGHT_STYLE[
                                                         "missing"
                                                     ]["color"],
                                                 },
@@ -151,7 +151,6 @@ def create_layout(
                                             "display": "flex",
                                             "justifyContent": "space-between",
                                             "alignItems": "center",
-                                            "marginBottom": "0.5rem",
                                         },
                                         children=[
                                             html.H3(
@@ -186,7 +185,8 @@ def create_layout(
                                                         value=None,
                                                         className="btn-group",
                                                         inputClassName="btn-check",
-                                                        labelClassName="btn btn-outline-primary",
+                                                        labelClassName="btn btn-"
+                                                        "outline-primary",
                                                         labelCheckedClassName="active",
                                                     ),
                                                 ],
@@ -219,10 +219,10 @@ def create_layout(
                                                 id="error-btn",
                                                 n_clicks=0,
                                                 style={
-                                                    "backgroundColor": HIGHLIGHT_STYLING[
+                                                    "backgroundColor": HIGHLIGHT_STYLE[
                                                         "error"
                                                     ]["color"],
-                                                    "borderColor": HIGHLIGHT_STYLING[
+                                                    "borderColor": HIGHLIGHT_STYLE[
                                                         "error"
                                                     ]["color"],
                                                 },
@@ -232,10 +232,10 @@ def create_layout(
                                                 id="trivial-btn",
                                                 n_clicks=0,
                                                 style={
-                                                    "backgroundColor": HIGHLIGHT_STYLING[
+                                                    "backgroundColor": HIGHLIGHT_STYLE[
                                                         "trivial"
                                                     ]["color"],
-                                                    "borderColor": HIGHLIGHT_STYLING[
+                                                    "borderColor": HIGHLIGHT_STYLE[
                                                         "trivial"
                                                     ]["color"],
                                                 },
@@ -246,10 +246,14 @@ def create_layout(
                                                 n_clicks=0,
                                                 style={
                                                     "backgroundColor": (
-                                                        HIGHLIGHT_STYLING["wording"]["color"]
+                                                        HIGHLIGHT_STYLE["wording"][
+                                                            "color"
+                                                        ]
                                                     ),
                                                     "borderColor": (
-                                                        HIGHLIGHT_STYLING["wording"]["color"]
+                                                        HIGHLIGHT_STYLE["wording"][
+                                                            "color"
+                                                        ]
                                                     ),
                                                 },
                                             ),

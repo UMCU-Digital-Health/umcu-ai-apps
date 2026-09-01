@@ -201,7 +201,8 @@ def handle_delete(n_clicks_list: list[int], ref_id: int) -> tuple:
 )
 def handle_severity_change(values: list[bool]) -> str:
     """Persist a marking's "severe" flag when its checkbox is toggled.
-    There is no return value and Output, because the checkbox is already in the correct state in the UI and only the database needs to be updated.
+    There is no return value and Output, because the checkbox is already in the correct
+     state in the UI and only the database needs to be updated.
 
     Parameters
     ----------
@@ -215,13 +216,15 @@ def handle_severity_change(values: list[bool]) -> str:
     is_severe = bool(ctx.triggered[0]["value"])
     update_marking_severity(SESSIONMAKER, triggered["index"], is_severe)
 
+
 @app.callback(
     Input({"type": "comment-input", "index": ALL}, "value"),
     prevent_initial_call=True,
 )
 def handle_comment_change(values: list[str]):
     """Persist a marking's comment when its input loses focus.
-    There is no return value and Output, because the checkbox is already in the correct state in the UI and only the database needs to be updated.
+    There is no return value and Output, because the checkbox is already in the correct
+     state in the UI and only the database needs to be updated.
 
     Parameters
     ----------
@@ -234,7 +237,6 @@ def handle_comment_change(values: list[str]):
 
     comment = ctx.triggered[0]["value"] or ""
     update_marking_comment(SESSIONMAKER, triggered["index"], comment)
-
 
 
 @app.callback(
