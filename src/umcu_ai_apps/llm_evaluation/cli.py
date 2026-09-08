@@ -3,6 +3,7 @@
 If the database does not exist yet, this script initialises it.
 """
 
+import argparse
 import csv
 import logging
 import os
@@ -15,35 +16,15 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, sessionmaker
 from umcu_ai_utils.database_connection import get_engine
 
-from umcu_ai_apps.llm_evaluation.models import (
+from umcu_ai_apps.config import configure_logging
+from umcu_ai_apps.llm_evaluation.database.models import (
     Base,
     Context,
     EvaluationItem,
     Reference,
 )
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
-# Select the database environment within the .env file
-load_dotenv()
-
-db_env = cast(
-    Literal["PROD", "ACC", "DEBUG"],
-    os.getenv("DB_ENVIRONMENT"),
-)
-
-engine = get_engine(
-    db_env=db_env,
-    schema_name=Reference.__table__.schema,
-)
-
-logger.info("Using database environment: %s", db_env)
-
-Base.metadata.create_all(bind=engine)
-
-SESSIONMAKER = sessionmaker(bind=engine)
 
 
 class EvaluationRow(BaseModel):
@@ -63,29 +44,18 @@ def add_evaluation_row(session: Session, row: EvaluationRow) -> None:
     reference = Reference(
         reference_id=row.reference_id,
         reference_description=row.reference_description,
-        department=row.department,
+        department=row.department or "Unknown",
     )
+    reference.evaluation_item_relation = EvaluationItem(
+        llm_response=row.llm_response,
+        model=row.model or "Unknown",
+    )
+    reference.context_relation = Context(context_text=row.context_text)
+
     session.add(reference)
 
-    # Get reference.id before creating related records.
-    session.flush()
 
-    session.add_all(
-        [
-            EvaluationItem(
-                reference_id=reference.id,
-                llm_response=row.llm_response,
-                model=row.model,
-            ),
-            Context(
-                reference_id=reference.id,
-                context_text=row.context_text,
-            ),
-        ]
-    )
-
-
-def prep_evaluation(evaluation_data_path: Path) -> None:
+def prep_evaluation(evaluation_data_path: Path, sessionmaker: sessionmaker) -> None:
     """Load, validate, and insert evaluation data into the database.
 
     Existing entries are skipped based on reference_id.
@@ -96,11 +66,8 @@ def prep_evaluation(evaluation_data_path: Path) -> None:
         Path to the CSV file containing evaluation data.
     """
 
-    # Open with explicit encoding and replace errors to avoid decode failures.
     with evaluation_data_path.open(
-        "r",
         encoding="utf-8",
-        errors="replace",
         newline="",
     ) as f:
         reader = csv.DictReader(f)
@@ -110,7 +77,7 @@ def prep_evaluation(evaluation_data_path: Path) -> None:
         logger.warning("No data to insert into database.")
         return
 
-    with SESSIONMAKER() as session:
+    with sessionmaker() as session:
         incoming_reference_ids = {row.reference_id for row in rows}
 
         existing_reference_ids = set(
@@ -129,10 +96,8 @@ def prep_evaluation(evaluation_data_path: Path) -> None:
         for row in rows:
             if row.reference_id in existing_reference_ids:
                 logger.info(
-                    "Skipping reference_id %s from department %s "
-                    "— already exists in database.",
-                    row.reference_id,
-                    row.department,
+                    f"Skipping reference_id {row.reference_id} from "
+                    f"department {row.department} — already exists in database.",
                 )
                 skipped += 1
                 continue
@@ -145,16 +110,49 @@ def prep_evaluation(evaluation_data_path: Path) -> None:
 
         session.commit()
 
-        logger.info(
-            "Insert complete. Inserted: %d, Skipped: %d.",
-            inserted,
-            skipped,
-        )
+        logger.info(f"Insert complete. Inserted: {inserted}, Skipped: {skipped}.")
+
+
+def main() -> None:
+    """Main function to prepare evaluation data.
+
+    Parameters
+    ----------
+    evaluation_data_path : Path
+        Path to the CSV file containing evaluation data.
+    """
+    parser = argparse.ArgumentParser(
+        description="Prepare evaluation data for the LLM evaluation app.",
+    )
+    parser.add_argument(
+        "-p",
+        "--path",
+        dest="evaluation_data_path",
+        type=Path,
+        required=True,
+        help="Path to the CSV file containing evaluation data.",
+    )
+    args = parser.parse_args()
+
+    configure_logging()
+    load_dotenv()
+
+    db_env = cast(
+        Literal["PROD", "ACC", "DEBUG"],
+        os.getenv("DB_ENVIRONMENT"),
+    )
+
+    engine = get_engine(
+        db_env=db_env,
+        schema_name=Reference.__table__.schema,
+    )
+
+    logger.info(f"Using database environment: {db_env}")
+
+    Base.metadata.create_all(bind=engine)
+
+    prep_evaluation(args.evaluation_data_path, sessionmaker(bind=engine))
 
 
 if __name__ == "__main__":
-    evaluation_data_path = (
-        Path(__file__).parents[1] / "data" / "processed" / "llm_evaluation_data.csv"
-    )
-
-    prep_evaluation(evaluation_data_path)
+    main()

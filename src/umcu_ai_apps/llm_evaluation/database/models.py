@@ -51,7 +51,7 @@ class EvaluationItem(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
     reference_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey(Reference.id), unique=True, init=True
+        Integer, ForeignKey(Reference.id), unique=True, init=False
     )
     llm_response: Mapped[str]
     model: Mapped[str] = mapped_column(String(10), nullable=True)
@@ -76,7 +76,7 @@ class Context(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
     reference_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey(Reference.id), unique=True, init=True
+        Integer, ForeignKey(Reference.id), unique=True, init=False
     )
     context_text: Mapped[str]
 
@@ -151,7 +151,7 @@ class AssessmentUsability(Base):
         Integer, ForeignKey(EvaluationItem.id), unique=True, init=True
     )
     usability_score: Mapped[int]
-    comments: Mapped[str] = mapped_column(String, nullable=True)
+    comments: Mapped[str | None] = mapped_column(String, nullable=True)
     timestamp: Mapped[datetime] = mapped_column(DateTime)
 
     # Relationships
