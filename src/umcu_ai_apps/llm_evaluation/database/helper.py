@@ -2,7 +2,7 @@ from datetime import datetime
 
 import flask
 from sqlalchemy import select
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session, sessionmaker
 from umcu_ai_utils.dash.authentication import get_user_email
 
 from umcu_ai_apps.llm_evaluation.database.models import (
@@ -13,24 +13,21 @@ from umcu_ai_apps.llm_evaluation.database.models import (
 )
 
 
-def _get_user_id(session_factory: sessionmaker) -> int:
+def _get_user_id(session: Session) -> int:
     """Return the DB id for the current user
 
     Parameters
     ----------
-    session_factory : sessionmaker
-        SQLAlchemy session factory used to open a database session.
+    session : Session
+        SQLAlchemy session used to interact with the database.
     """
     email = get_user_email(flask.request)
-    with session_factory() as session:
-        user = session.execute(
-            select(User).where(User.email == email)
-        ).scalar_one_or_none()
-        if user is None:
-            user = User(email=email)
-            session.add(user)
-            session.commit()
-        return user.id
+    user = session.execute(select(User).where(User.email == email)).scalar_one_or_none()
+    if user is None:
+        user = User(email=email)
+        session.add(user)
+        session.commit()
+    return user.id
 
 
 def load_dropdown_options(session_factory: sessionmaker) -> list[dict]:
@@ -137,7 +134,7 @@ def save_marking_to_db(
     with session_factory() as session:
         ref = session.get(Reference, ref_id)
         marking = Marking(
-            user_id=_get_user_id(session_factory),
+            user_id=_get_user_id(session),
             evaluation_item_id=ref.evaluation_item_relation.id,
             context_id=ref.context_relation.id,
             marking_type=sel["type"],
@@ -263,7 +260,7 @@ def save_usability_assessment(
         The usability score, from 1 to 5.
     """
     with session_factory() as session:
-        user_id = _get_user_id(session_factory)
+        user_id = _get_user_id(session)
         assessment = session.execute(
             select(AssessmentUsability).where(
                 AssessmentUsability.evaluation_item_id == evaluation_item_id,
