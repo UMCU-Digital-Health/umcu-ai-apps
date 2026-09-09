@@ -31,7 +31,7 @@ def _get_user_id(session: Session) -> int:
     if user is None:
         user = User(email=email)
         session.add(user)
-        session.commit()
+        session.flush()
     return user.id
 
 
@@ -130,6 +130,8 @@ def save_marking_to_db(
     """
     with session_factory() as session:
         ref = session.get(Reference, ref_id)
+        if ref is None:
+            raise ValueError(f"Reference with id {ref_id} not found.")
         marking = Marking(
             user_id=_get_user_id(session),
             evaluation_item_id=ref.evaluation_item_relation.id,

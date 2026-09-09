@@ -54,8 +54,7 @@ function _getSelectionPayload(container) {
 
     try {
         var range = selection.getRangeAt(0);
-        if (!container.contains(range.startContainer)) { return null; }
-
+        if (!container.contains(range.startContainer) || !container.contains(range.endContainer)) { return null; }
         var preRange = document.createRange();
         preRange.selectNodeContents(container);
         preRange.setEnd(range.startContainer, range.startOffset);
