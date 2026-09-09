@@ -9,29 +9,22 @@ Email: l.p.veerhoek@umcutrecht.nl
 
 To install the umcu_ai_apps package use:
 
-```{bash}
+```bash
 uv sync
 ```
 
-This will also install the nbstripout package, which will strip out the output of notebooks when committing to git.
-The nbstripout package should be installed automatically when running this cookiecutter template, to check if it is installed run:
+## First use
 
-```{bash}
-nbstripout --status
+To populate the database first run the prep_llm_eval command:
+
+```bash
+prep_llm_eval data/processed/llm_evaluation_data_example.csv
 ```
 
-If it is not installed, you can install it manually by running:
+Then you can run the dashboard locally in dev mode by using the llm_eval_dash command:
 
-```{bash}
-nbstripout --install
+```bash
+llm_eval_dash
 ```
 
-## Deploying to PositConnect
-
-To deploy to PositConnect install rsconnect (`pip install rsconnect-python`) and run (in case of a dash app):
-```{bash}
-rsconnect deploy dash --server https://rsc.ds.umcutrecht.nl/ --api-key <(user specific key)> --entrypoint run.app:app .
-```
-
-## Documentation
-Dataset and model information can be found in the [dataset card](docs/dataset_card.md) and [model card](docs/model_card.md), respectively.
+Which opens a dash application using port 8017 on localhost

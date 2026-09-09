@@ -1,0 +1,26 @@
+version = 1
+disable_existing_loggers = false
+
+[formatters.rich]
+format = "%(message)s"
+
+[handlers.package_console]
+class = "rich.logging.RichHandler"
+level = "NOTSET"
+formatter = "rich"
+rich_tracebacks = true
+
+[handlers.third_party_console]
+class = "rich.logging.RichHandler"
+level = "INFO"
+formatter = "rich"
+rich_tracebacks = true
+
+[loggers.umcu_ai_apps]
+level = "INFO"
+handlers = ["package_console"]
+propagate = false
+
+[root]
+level = "INFO"
+handlers = ["third_party_console"]

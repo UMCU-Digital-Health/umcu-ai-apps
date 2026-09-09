@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "umcu_ai_apps"
-version = "0.1.0"
+version = "1.0.0"
 authors = [
     { name = "Laura Veerhoek", email = "l.p.veerhoek@umcutrecht.nl" },
 ]
@@ -15,7 +15,18 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
-dependencies = []
+dependencies = [
+    "dash>=4.4.1",
+    "dash-bootstrap-components>=2.0.4",
+    "dotenv>=0.9.9",
+    "rich>=15.0.0",
+    "sqlalchemy>=2.0.52",
+    "umcu-ai-utils[dash]>=0.3.0",
+]
+
+[project.scripts]
+prep_llm_eval = "umcu_ai_apps.llm_evaluation.cli:main"
+llm_eval_dash = "umcu_ai_apps.llm_evaluation.app:main"
 
 [dependency-groups]
 dev = [
