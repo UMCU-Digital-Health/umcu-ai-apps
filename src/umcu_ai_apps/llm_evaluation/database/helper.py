@@ -5,6 +5,11 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, sessionmaker
 from umcu_ai_utils.dash.authentication import get_user_email
 
+from umcu_ai_apps.llm_evaluation.dash.dataclasses import (
+    MarkingData,
+    ReferenceData,
+    Selection,
+)
 from umcu_ai_apps.llm_evaluation.database.models import (
     AssessmentUsability,
     Marking,
@@ -51,7 +56,7 @@ def load_dropdown_options(session_factory: sessionmaker) -> list[dict]:
         ]
 
 
-def load_reference(session_factory: sessionmaker, ref_id: int) -> dict:
+def load_reference(session_factory: sessionmaker, ref_id: int) -> ReferenceData:
     """Load full data from the database for a specific reference with ref_id.
 
     Returns context text, LLM response, internal IDs, and the markings.
@@ -65,20 +70,14 @@ def load_reference(session_factory: sessionmaker, ref_id: int) -> dict:
 
     Returns
     -------
-    dict
-        Keys: "context", "llm", "evaluation_item_id",
-        "context_id", "markings".
+    ReferenceData
+        The loaded reference data including context,
+        LLM response, internal IDs, and markings.
     """
     with session_factory() as session:
         ref = session.get(Reference, ref_id)
         if ref is None:
-            return {
-                "context": "",
-                "llm": "",
-                "evaluation_item_id": None,
-                "context_id": None,
-                "markings": [],
-            }
+            raise ValueError(f"Reference with id {ref_id} not found.")
 
         eval_item = ref.evaluation_item_relation
         context = ref.context_relation
@@ -92,33 +91,31 @@ def load_reference(session_factory: sessionmaker, ref_id: int) -> dict:
             .scalars()
             .all()
         )
-
-        return {
-            "context": context.context_text,
-            "llm": eval_item.llm_response,
-            "evaluation_item_id": eval_item.id,
-            "context_id": context.id,
-            "markings": [
-                {
-                    "id": m.id,
-                    "type": m.marking_type,
-                    "sel": {
-                        "text": m.marking_text,
-                        "start": m.marking_start,
-                        "end": m.marking_end,
-                    },
-                    "is_severe": m.is_severe,
-                    "comment": m.comment or "",
-                }
+        return ReferenceData(
+            context=context.context_text,
+            llm=eval_item.llm_response,
+            evaluation_item_id=eval_item.id,
+            markings=[
+                MarkingData(
+                    id=m.id,
+                    sel=Selection(
+                        text=m.marking_text,
+                        start=m.marking_start,
+                        end=m.marking_end,
+                        type=m.marking_type,
+                    ),
+                    is_severe=m.is_severe,
+                    comment=m.comment or "",
+                )
                 for m in db_markings
             ],
-        }
+        )
 
 
 def save_marking_to_db(
     session_factory: sessionmaker,
     ref_id: int,
-    sel: dict,
+    sel: Selection,
 ) -> None:
     """Insert a new marking into the database.
 
@@ -128,8 +125,8 @@ def save_marking_to_db(
         SQLAlchemy session factory used to open a database session.
     ref_id : int
         The Reference.id this marking belongs to.
-    sel : dict
-        Selection dict with "text", "start", "end", and "type" keys.
+    sel : Selection
+        Selection object with "text", "start", "end", and "type" attributes.
     """
     with session_factory() as session:
         ref = session.get(Reference, ref_id)
@@ -137,10 +134,10 @@ def save_marking_to_db(
             user_id=_get_user_id(session),
             evaluation_item_id=ref.evaluation_item_relation.id,
             context_id=ref.context_relation.id,
-            marking_type=sel["type"],
-            marking_text=sel["text"],
-            marking_start=sel["start"],
-            marking_end=sel["end"],
+            marking_type=sel.type,
+            marking_text=sel.text,
+            marking_start=sel.start,
+            marking_end=sel.end,
             timestamp=datetime.now(),
         )
         session.add(marking)

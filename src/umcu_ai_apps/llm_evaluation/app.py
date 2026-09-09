@@ -30,6 +30,7 @@ from sqlalchemy.orm import sessionmaker
 from umcu_ai_utils.database_connection import get_engine
 
 from umcu_ai_apps.config import configure_logging
+from umcu_ai_apps.llm_evaluation.dash.dataclasses import Selection
 from umcu_ai_apps.llm_evaluation.dash.helper import (
     full_rebuild,
     is_duplicate,
@@ -150,20 +151,20 @@ def handle_save(
                 html.Span("⚠ Selecteer eerst tekst.", style={"color": "orange"}),
                 no_update,
             )
+        selection_data = Selection(**selection_data)
 
-        sel_type = selection_data["type"]
-
-        markings = load_reference(SESSIONMAKER, reference_id)["markings"]
+        markings = load_reference(SESSIONMAKER, reference_id).markings
         if is_duplicate(selection_data, markings):
             msg = html.Span("ℹ Al gemarkeerd.", style={"color": "#3b82f6"})
-            if sel_type == "missing":
+            if selection_data.type == "missing":
                 return *([no_update] * 3), msg, no_update, no_update
             else:
                 return *([no_update] * 3), no_update, msg, no_update
 
+        logger.info(f"Saving new marking with type: {selection_data.type}")
         save_marking_to_db(SESSIONMAKER, reference_id, selection_data)
 
-        if sel_type == "missing":
+        if selection_data.type == "missing":
             return (*full_rebuild(SESSIONMAKER, reference_id), "", no_update, no_update)
         return (*full_rebuild(SESSIONMAKER, reference_id), no_update, "", no_update)
     # Handle a delete button being clicked
@@ -246,8 +247,8 @@ def handle_usability_change(score: int | None, ref_id: int) -> None:
     if score == stored_score:
         return
 
-    ref = load_reference(SESSIONMAKER, ref_id)
-    save_usability_assessment(SESSIONMAKER, ref["evaluation_item_id"], score)
+    reference_data = load_reference(SESSIONMAKER, ref_id)
+    save_usability_assessment(SESSIONMAKER, reference_data.evaluation_item_id, score)
     logger.info(f"Saved usability score {score}")
 
 

@@ -2,8 +2,8 @@ import dash_bootstrap_components as dbc
 from dash import dcc, html
 from umcu_ai_utils.dash.layout import get_navbar
 
+from umcu_ai_apps.llm_evaluation.dash.dataclasses import HighlightStyle
 from umcu_ai_apps.llm_evaluation.dash.helper import (
-    HIGHLIGHT_STYLE,
     build_table,
 )
 
@@ -121,12 +121,12 @@ def create_layout(
                                                 id="save-btn",
                                                 n_clicks=0,
                                                 style={
-                                                    "backgroundColor": HIGHLIGHT_STYLE[
-                                                        "missing"
-                                                    ]["color"],
-                                                    "borderColor": HIGHLIGHT_STYLE[
-                                                        "missing"
-                                                    ]["color"],
+                                                    "backgroundColor": (
+                                                        HighlightStyle.MISSING.color
+                                                    ),
+                                                    "borderColor": (
+                                                        HighlightStyle.MISSING.color
+                                                    ),
                                                 },
                                             ),
                                         ],
@@ -219,12 +219,12 @@ def create_layout(
                                                 id="error-btn",
                                                 n_clicks=0,
                                                 style={
-                                                    "backgroundColor": HIGHLIGHT_STYLE[
-                                                        "error"
-                                                    ]["color"],
-                                                    "borderColor": HIGHLIGHT_STYLE[
-                                                        "error"
-                                                    ]["color"],
+                                                    "backgroundColor": (
+                                                        HighlightStyle.ERROR.color
+                                                    ),
+                                                    "borderColor": (
+                                                        HighlightStyle.ERROR.color
+                                                    ),
                                                 },
                                             ),
                                             dbc.Button(
@@ -232,12 +232,12 @@ def create_layout(
                                                 id="trivial-btn",
                                                 n_clicks=0,
                                                 style={
-                                                    "backgroundColor": HIGHLIGHT_STYLE[
-                                                        "trivial"
-                                                    ]["color"],
-                                                    "borderColor": HIGHLIGHT_STYLE[
-                                                        "trivial"
-                                                    ]["color"],
+                                                    "backgroundColor": (
+                                                        HighlightStyle.TRIVIAL.color
+                                                    ),
+                                                    "borderColor": (
+                                                        HighlightStyle.TRIVIAL.color
+                                                    ),
                                                 },
                                             ),
                                             dbc.Button(
@@ -246,14 +246,10 @@ def create_layout(
                                                 n_clicks=0,
                                                 style={
                                                     "backgroundColor": (
-                                                        HIGHLIGHT_STYLE["wording"][
-                                                            "color"
-                                                        ]
+                                                        HighlightStyle.WORDING.color
                                                     ),
                                                     "borderColor": (
-                                                        HIGHLIGHT_STYLE["wording"][
-                                                            "color"
-                                                        ]
+                                                        HighlightStyle.WORDING.color
                                                     ),
                                                 },
                                             ),

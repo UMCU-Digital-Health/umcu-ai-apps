@@ -64,6 +64,8 @@ def prep_evaluation(evaluation_data_path: Path, sessionmaker: sessionmaker) -> N
     ----------
     evaluation_data_path : Path
         Path to the CSV file containing evaluation data.
+    sessionmaker : sessionmaker
+        SQLAlchemy sessionmaker instance for database interaction.
     """
 
     with evaluation_data_path.open(
@@ -114,22 +116,13 @@ def prep_evaluation(evaluation_data_path: Path, sessionmaker: sessionmaker) -> N
 
 
 def main() -> None:
-    """Main function to prepare evaluation data.
-
-    Parameters
-    ----------
-    evaluation_data_path : Path
-        Path to the CSV file containing evaluation data.
-    """
+    """Main function to prepare evaluation data"""
     parser = argparse.ArgumentParser(
         description="Prepare evaluation data for the LLM evaluation app.",
     )
     parser.add_argument(
-        "-p",
-        "--path",
-        dest="evaluation_data_path",
+        "path",
         type=Path,
-        required=True,
         help="Path to the CSV file containing evaluation data.",
     )
     args = parser.parse_args()
@@ -151,7 +144,7 @@ def main() -> None:
 
     Base.metadata.create_all(bind=engine)
 
-    prep_evaluation(args.evaluation_data_path, sessionmaker(bind=engine))
+    prep_evaluation(args.path, sessionmaker(bind=engine))
 
 
 if __name__ == "__main__":

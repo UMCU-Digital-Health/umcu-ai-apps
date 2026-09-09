@@ -4,35 +4,21 @@ import dash_bootstrap_components as dbc
 from dash import dcc, html
 from sqlalchemy.orm import sessionmaker
 
-from umcu_ai_apps.llm_evaluation.database.helper import load_reference
+from umcu_ai_apps.llm_evaluation.dash.dataclasses import (
+    HighlightStyle,
+    MarkingData,
+    Selection,
+)
+from umcu_ai_apps.llm_evaluation.database.helper import (
+    load_reference,
+)
 
 logger = logging.getLogger(__name__)
-
-# ── Styling ─────────────────────────────────────────────────────
-
-HIGHLIGHT_STYLE = {
-    "missing": {
-        "label": "Gemiste informatie",
-        "color": "#1191FAA6",
-    },
-    "error": {
-        "label": "Fout",
-        "color": "#EC6522AF",
-    },
-    "trivial": {
-        "label": "Triviaal",
-        "color": "#005A9C80",
-    },
-    "wording": {
-        "label": "Formulering",
-        "color": "#d5d5d5",
-    },
-}
 
 
 def build_highlighted_children(
     text: str,
-    layers: list[tuple[list[dict], str]],
+    layers: list[tuple[list[Selection], str]],
 ) -> list[str | html.Mark]:
     """Build a list of Dash children with highlighted spans.
 
@@ -45,10 +31,10 @@ def build_highlighted_children(
     ----------
     text : str
         The full source string to highlight within.
-    layers : list[tuple[list[dict], str]]
+    layers : list[tuple[list[Selection], str]]
         Each element is a 2-tuple ``(selections, style)`` where *selections*
-        is a list of dicts with ``"start"`` and ``"end"`` integer keys, and
-        *style* is a string containing the background color.
+        is a list of ``Selection`` objects, and *style* is a string containing
+        the background color.
 
     Returns
     -------
@@ -58,7 +44,7 @@ def build_highlighted_children(
     """
     marks = sorted(
         (
-            (selection["start"], selection["end"], color)
+            (selection.start, selection.end, color)
             for selections, color in layers
             for selection in selections
         ),
@@ -93,7 +79,7 @@ def build_highlighted_children(
 
 def rebuild_panel(
     text: str,
-    markings: list[dict],
+    markings: list[MarkingData],
     show_types: set[str],
 ) -> list[str | html.Mark]:
     """Build highlighted children for a text panel.
@@ -105,9 +91,9 @@ def rebuild_panel(
     ----------
     text : str
         The source string to highlight within.
-    markings : list[dict]
-        The full list of marking entries (each with ``"type"`` and
-        ``"sel"`` keys).
+    markings : list[MarkingData]
+        The full list of marking entries (each with ``type`` and
+        ``sel`` attributes).
     show_types : set[str]
         Which marking types to render (e.g. ``{"missing"}`` or
         ``{"error", "trivial"}``).
@@ -121,15 +107,15 @@ def rebuild_panel(
         text,
         [
             (
-                [e["sel"] for e in markings if e["type"] == t],
-                HIGHLIGHT_STYLE[t]["color"],
+                [e.sel for e in markings if e.sel.type == t],
+                HighlightStyle(t).color,
             )
             for t in show_types
         ],
     )
 
 
-def is_duplicate(sel: dict, markings: list[dict]) -> bool:
+def is_duplicate(sel: Selection, markings: list[MarkingData]) -> bool:
     """Check whether an identical selection already exists in *markings*.
 
     Two selections are considered duplicates when they share the same
@@ -137,9 +123,9 @@ def is_duplicate(sel: dict, markings: list[dict]) -> bool:
 
     Parameters
     ----------
-    sel : dict
-        A selection dict with ``"start"`` and ``"end"`` integer keys.
-    markings : list[dict]
+    sel : Selection
+        A selection object with ``start`` and ``end`` integer attributes.
+    markings : list[MarkingData]
         The current list of annotation entries.
 
     Returns
@@ -147,20 +133,17 @@ def is_duplicate(sel: dict, markings: list[dict]) -> bool:
     bool
         ``True`` if *sel* duplicates an existing entry, ``False`` otherwise.
     """
-    return any(
-        e["sel"]["start"] == sel["start"] and e["sel"]["end"] == sel["end"]
-        for e in markings
-    )
+    return any(e.sel.start == sel.start and e.sel.end == sel.end for e in markings)
 
 
-def build_table(markings: list[dict]) -> html.P | html.Table:
+def build_table(markings: list[MarkingData]) -> html.P | html.Table:
     """Build an HTML table summarising all saved selections.
     Each row shows the entry's type label, selected text, a checkbox for severity,
     a comment field and a delete button.
 
     Parameters
     ----------
-    markings : list[dict]
+    markings : list[MarkingData]
         The current list of annotation entries.
 
     Returns
@@ -190,33 +173,33 @@ def build_table(markings: list[dict]) -> html.P | html.Table:
 
     rows = []
     for entry in markings:
-        meta = HIGHLIGHT_STYLE[entry["type"]]
+        meta = HighlightStyle(entry.sel.type)
         rows.append(
             html.Tr(
                 [
                     html.Td(
-                        meta["label"],
+                        meta.label,
                         style={**cell, "width": "16%"},
                     ),
                     html.Td(
                         html.Span(
-                            entry["sel"]["text"],
-                            style={"background": meta["color"], "width": "80%"},
+                            entry.sel.text,
+                            style={"background": meta.color, "width": "80%"},
                         ),
                         style=cell,
                     ),
                     html.Td(
                         dbc.Checkbox(
-                            id={"type": "severe-checkbox", "index": entry["id"]},
-                            value=entry["is_severe"],
+                            id={"type": "severe-checkbox", "index": entry.id},
+                            value=entry.is_severe,
                         ),
                         style={**cell, "width": "8%", "textAlign": "center"},
                     ),
                     html.Td(
                         dcc.Input(
-                            id={"type": "comment-input", "index": entry["id"]},
+                            id={"type": "comment-input", "index": entry.id},
                             type="text",
-                            value=entry["comment"],
+                            value=entry.comment,
                             debounce=True,
                             placeholder="Opmerking...",
                             style={"width": "100%"},
@@ -226,7 +209,7 @@ def build_table(markings: list[dict]) -> html.P | html.Table:
                     html.Td(
                         html.Button(
                             "✕",
-                            id={"type": "delete-btn", "index": entry["id"]},
+                            id={"type": "delete-btn", "index": entry.id},
                             n_clicks=0,
                             style=del_style,
                             title="Verwijder",
@@ -287,10 +270,10 @@ def full_rebuild(
     table : html.P | html.Table
         Updated selection table component.
     """
-    ref = load_reference(session_factory, ref_id)
-    markings = ref["markings"]
+    reference_data = load_reference(session_factory, ref_id)
+    markings = reference_data.markings
     return (
-        rebuild_panel(ref["context"], markings, {"missing"}),
-        rebuild_panel(ref["llm"], markings, {"error", "trivial", "wording"}),
+        rebuild_panel(reference_data.context, markings, {"missing"}),
+        rebuild_panel(reference_data.llm, markings, {"error", "trivial", "wording"}),
         build_table(markings),
     )

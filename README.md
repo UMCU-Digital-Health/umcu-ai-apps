@@ -18,7 +18,7 @@ uv sync
 To populate the database first run the prep_llm_eval command:
 
 ```bash
-prep_llm_eval -p data/processed/llm_evaluation_data_example.csv
+prep_llm_eval data/processed/llm_evaluation_data_example.csv
 ```
 
 Then you can run the dashboard locally in dev mode by using the llm_eval_dash command:
