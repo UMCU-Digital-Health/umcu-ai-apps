@@ -70,7 +70,7 @@ app.layout = create_layout(dropdown_options)
 app.clientside_callback(
     ClientsideFunction(namespace="clientside", function_name="capture_selection"),
     Output("selection-store", "data"),
-    Input("save-btn", "n_clicks"),
+    Input("missing-btn", "n_clicks"),
     Input("error-btn", "n_clicks"),
     Input("trivial-btn", "n_clicks"),
     Input("wording-btn", "n_clicks"),

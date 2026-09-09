@@ -5,18 +5,18 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
          * Read the persisted selection and tag it with the action type
          * based on which button triggered the callback.
          *
-         * @param {number} saveButtonClicks save-btn clicks
+         * @param {number} missingButtonClicks missing-btn clicks
          * @param {number} errorButtonClicks error-btn clicks
          * @param {number} trivialButtonClicks trivial-btn clicks
          * @param {number} wordingButtonClicks wording-btn clicks
          * @returns {string|Object} JSON payload with text, start, end, type.
          */
-        capture_selection: function (saveButtonClicks, errorButtonClicks, trivialButtonClicks, wordingButtonClicks) {
-            if (!saveButtonClicks && !errorButtonClicks && !trivialButtonClicks && !wordingButtonClicks) { return window.dash_clientside.no_update; }
+        capture_selection: function (missingButtonClicks, errorButtonClicks, trivialButtonClicks, wordingButtonClicks) {
+            if (!missingButtonClicks && !errorButtonClicks && !trivialButtonClicks && !wordingButtonClicks) { return window.dash_clientside.no_update; }
 
             var prop_id = (dash_clientside.callback_context.triggered[0] || {}).prop_id || "";
             var types = {
-                "save-btn": "missing",
+                "missing-btn": "missing",
                 "error-btn": "error",
                 "trivial-btn": "trivial",
                 "wording-btn": "wording",
@@ -102,7 +102,7 @@ function _wireContainer(containerId, buttonIds, storageKey) {
 
 (function _initListeners() {
     function _setup() {
-        _wireContainer("context-text", ["save-btn"], "_selCapture_missing");
+        _wireContainer("context-text", ["missing-btn"], "_selCapture_missing");
         _wireContainer("llm-text", ["error-btn", "trivial-btn", "wording-btn"], "_selCapture_review");
     }
 
