@@ -115,7 +115,7 @@ def rebuild_panel(
     )
 
 
-def is_duplicate(sel: Selection, markings: list[MarkingData]) -> bool:
+def is_duplicate(current_selection: Selection, markings: list[MarkingData]) -> bool:
     """Check whether an identical selection already exists in *markings*.
 
     Two selections are considered duplicates when they share the same
@@ -123,7 +123,7 @@ def is_duplicate(sel: Selection, markings: list[MarkingData]) -> bool:
 
     Parameters
     ----------
-    sel : Selection
+    current_selection : Selection
         A selection object with ``start`` and ``end`` integer attributes.
     markings : list[MarkingData]
         The current list of annotation entries.
@@ -131,9 +131,13 @@ def is_duplicate(sel: Selection, markings: list[MarkingData]) -> bool:
     Returns
     -------
     bool
-        ``True`` if *sel* duplicates an existing entry, ``False`` otherwise.
+        ``True`` if *current_selection* duplicates an existing entry,
+        ``False`` otherwise.
     """
-    return any(e.sel.start == sel.start and e.sel.end == sel.end for e in markings)
+    return any(
+        e.sel.start == current_selection.start and e.sel.end == current_selection.end
+        for e in markings
+    )
 
 
 def build_table(markings: list[MarkingData]) -> html.P | html.Table:
