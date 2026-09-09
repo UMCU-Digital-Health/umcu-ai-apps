@@ -247,7 +247,9 @@ def save_usability_assessment(
     evaluation_item_id: int,
     usability_score: int,
 ) -> None:
-    """Create or update the current user's usability score for an item.
+    """Create or update the usability score for an item.
+
+    New scores are overwritten if an assessment already exists.
 
     Parameters
     ----------

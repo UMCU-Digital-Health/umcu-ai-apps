@@ -45,7 +45,7 @@ class Reference(Base):
     reference_description: Mapped[str] = mapped_column(String, nullable=True)
     department: Mapped[str] = mapped_column(String(50), nullable=True)
     loaded_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.now(), init=False
+        DateTime, default_factory=datetime.now, init=False
     )
 
     # Relationships
