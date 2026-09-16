@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Added authorization for users based on project and department combination(s)
+- Added a new command (add_eval_user) to add new users to the DB
 
 ### Changed
 - Only read (and create) the user when the dashboard initially loads, subsequent functions read it from the state
