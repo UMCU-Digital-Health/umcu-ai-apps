@@ -45,8 +45,8 @@ class Reference(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
     reference_id: Mapped[int] = mapped_column(Integer, unique=True)
     reference_description: Mapped[str] = mapped_column(String, nullable=True)
-    project: Mapped[str] = mapped_column(String(50), nullable=True)
-    department: Mapped[str] = mapped_column(String(50), nullable=True)
+    project: Mapped[str] = mapped_column(String(50), index=True)
+    department: Mapped[str] = mapped_column(String(50), index=True)
     loaded_at: Mapped[datetime] = mapped_column(
         DateTime, default_factory=datetime.now, init=False
     )
@@ -143,7 +143,7 @@ class User(Base):
     __table_args__ = {"schema": "llm_eval"}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
-    email: Mapped[str]
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
 
     # Relationships
     markings_relation: Mapped[list["Marking"]] = relationship(

@@ -221,13 +221,14 @@ def add_eval_user():
                 "User added/modified with access to project "
                 f"{args.project} and departments {', '.join(args.department)}"
             )
-        except IntegrityError:
+        except IntegrityError as e:
             session.rollback()
             logger.error(
                 f"Failed to modify {args.email} with access to project "
                 f"{args.project} and departments {', '.join(args.department)}: "
                 "user access may already exist."
             )
+            raise SystemExit(1) from e
 
 
 if __name__ == "__main__":
