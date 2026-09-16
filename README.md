@@ -18,8 +18,15 @@ uv sync
 To populate the database first run the prep_llm_eval command:
 
 ```bash
-prep_llm_eval data/processed/llm_evaluation_data_example.csv
+prep_llm_eval -p project_name data/processed/llm_evaluation_data_example.csv
 ```
+You need to give a project name, which will be used together with the department for user authorization.
+To add users and their authorization to the database (or add new projects/departments to an existing user):
+
+```bash
+add_eval_user -p project_name -d dep_a -d dep_b test@test.nl
+```
+Notice that you can supply multiple departments by repeating the -d flag.
 
 Then you can run the dashboard locally in dev mode by using the llm_eval_dash command:
 

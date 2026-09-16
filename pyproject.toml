@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "umcu_ai_apps"
-version = "1.0.0"
+version = "1.1.0"
 authors = [
     { name = "Laura Veerhoek", email = "l.p.veerhoek@umcutrecht.nl" },
 ]
@@ -25,7 +25,8 @@ dependencies = [
 ]
 
 [project.scripts]
-prep_llm_eval = "umcu_ai_apps.llm_evaluation.cli:main"
+prep_llm_eval = "umcu_ai_apps.llm_evaluation.cli:prep_llm_eval"
+add_eval_user = "umcu_ai_apps.llm_evaluation.cli:add_eval_user"
 llm_eval_dash = "umcu_ai_apps.llm_evaluation.app:main"
 
 [dependency-groups]

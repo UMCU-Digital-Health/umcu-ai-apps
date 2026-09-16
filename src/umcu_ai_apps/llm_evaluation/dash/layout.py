@@ -8,18 +8,11 @@ from umcu_ai_apps.llm_evaluation.dash.helper import (
 )
 
 
-def create_layout(
-    dropdown_options: list[dict],
-) -> html.Div:
+def create_layout() -> html.Div:
     """Build the app layout.
 
     Texts and markings are loaded by the reference-change callback
     which fires on page load (prevent_initial_call=False).
-
-    Parameters
-    ----------
-    dropdown_options : list[dict]
-        Pre-loaded options for the reference dropdown.
 
     Returns
     -------
@@ -45,6 +38,10 @@ def create_layout(
                         id="selection-store",
                         data="",
                     ),
+                    dcc.Store(
+                        id="current_user",
+                        data="",
+                    ),
                     # Reference dropdown
                     html.Div(
                         style={
@@ -63,12 +60,6 @@ def create_layout(
                             ),
                             dcc.Dropdown(
                                 id="ref-dropdown",
-                                options=dropdown_options,
-                                value=(
-                                    dropdown_options[0]["value"]
-                                    if dropdown_options
-                                    else None
-                                ),
                                 clearable=False,
                                 style={
                                     "maxWidth": "500px",

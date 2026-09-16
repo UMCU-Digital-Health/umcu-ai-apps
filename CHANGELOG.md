@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-09-16
+
+### Added
+- Added authorization for users based on project and department combination(s)
+
+### Changed
+- Only read (and create) the user when the dashboard initially loads, subsequent functions read it from the state
+
 ## [1.0.0] - 2026-08-28
 
 ### Added

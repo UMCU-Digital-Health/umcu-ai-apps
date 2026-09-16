@@ -141,7 +141,7 @@ def _setup_cli() -> Engine:
     return engine
 
 
-def main() -> None:
+def prep_llm_eval() -> None:
     """Main function to prepare evaluation data"""
     parser = argparse.ArgumentParser(
         description="Prepare evaluation data for the LLM evaluation app.",
@@ -167,7 +167,7 @@ def main() -> None:
     prep_evaluation(args.path, sessionmaker(bind=engine), args.project)
 
 
-def add_user():
+def add_eval_user():
     """Add a new user to the database"""
     parser = argparse.ArgumentParser(
         description="Add a new user to the database.",
@@ -222,5 +222,4 @@ def add_user():
 
 
 if __name__ == "__main__":
-    # main()
-    add_user()
+    prep_llm_eval()

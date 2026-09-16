@@ -249,7 +249,8 @@ def build_table(markings: list[MarkingData]) -> html.P | html.Table:
 
 def full_rebuild(
     session_factory: sessionmaker,
-    ref_id: int,
+    ref_id: int | None,
+    user_id: int,
 ) -> tuple[list[str | html.Mark], list[str | html.Mark], html.P | html.Table]:
     """Reload the reference from the database and recompute the full UI.
 
@@ -261,8 +262,10 @@ def full_rebuild(
     ----------
     session_factory : sessionmaker
         SQLAlchemy session factory used to open a database session.
-    ref_id : int
-        The currently selected Reference.id.
+    ref_id : int | None
+        The currently selected Reference.id, or None if no reference is selected.
+    user_id : int
+        The ID of the current user.
 
     Returns
     -------
@@ -274,7 +277,9 @@ def full_rebuild(
     table : html.P | html.Table
         Updated selection table component.
     """
-    reference_data = load_reference(session_factory, ref_id)
+    if ref_id is None:
+        return [], [], html.P(html.Strong("Referentie niet beschikbaar"))
+    reference_data = load_reference(session_factory, ref_id, user_id)
     markings = reference_data.markings
     return (
         rebuild_panel(reference_data.context, markings, {"missing"}),
