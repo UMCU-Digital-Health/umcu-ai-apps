@@ -64,8 +64,7 @@ app = Dash(
     assets_folder=str(Path(__file__).parent / "dash"),
     external_stylesheets=[dbc.themes.BOOTSTRAP],
 )
-
-app.layout = create_layout()
+app.layout = create_layout
 
 app.clientside_callback(
     ClientsideFunction(namespace="clientside", function_name="capture_selection"),
@@ -78,7 +77,6 @@ app.clientside_callback(
 )
 
 
-# Callback that fills the ref_dropdown after the app is loaded
 @app.callback(
     Output("ref-dropdown", "options"),
     Output("ref-dropdown", "value"),

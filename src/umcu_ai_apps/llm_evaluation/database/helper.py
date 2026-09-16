@@ -3,7 +3,7 @@ from datetime import datetime
 
 import flask
 from sqlalchemy import select
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import sessionmaker
 from umcu_ai_utils.dash.authentication import get_user_email
 
 from umcu_ai_apps.llm_evaluation.dash.dataclasses import (

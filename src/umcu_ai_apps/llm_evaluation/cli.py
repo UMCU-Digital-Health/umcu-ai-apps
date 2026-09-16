@@ -13,6 +13,7 @@ from typing import Literal, cast
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from sqlalchemy import Engine, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 from umcu_ai_utils.database_connection import get_engine
 
@@ -34,7 +35,7 @@ class EvaluationRow(BaseModel):
 
     reference_id: int
     reference_description: str
-    department: str | None = None
+    department: str
     context_text: str
     llm_response: str
     model: str | None = None
@@ -47,7 +48,7 @@ def add_evaluation_row(session: Session, row: EvaluationRow, project: str) -> No
         reference_id=row.reference_id,
         reference_description=row.reference_description,
         project=project,
-        department=row.department or "Unknown",
+        department=row.department,
     )
     reference.evaluation_item_relation = EvaluationItem(
         llm_response=row.llm_response,
@@ -214,11 +215,19 @@ def add_eval_user():
             user.user_access_relation.append(user_access)
 
         session.add(user)
-        session.commit()
-        logger.info(
-            "User added/modified with access to project "
-            f"{args.project} and departments {', '.join(args.department)}"
-        )
+        try:
+            session.commit()
+            logger.info(
+                "User added/modified with access to project "
+                f"{args.project} and departments {', '.join(args.department)}"
+            )
+        except IntegrityError:
+            session.rollback()
+            logger.error(
+                f"Failed to modify {args.email} with access to project "
+                f"{args.project} and departments {', '.join(args.department)}: "
+                "user access may already exist."
+            )
 
 
 if __name__ == "__main__":
