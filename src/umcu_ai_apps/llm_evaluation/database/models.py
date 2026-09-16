@@ -4,7 +4,7 @@ The main function of this database is to store logging, feedback and evaluation 
 
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
@@ -31,6 +31,8 @@ class Reference(Base):
         Unique identifier for the reference.
     reference_description : str
         Description of the reference.
+    project : str
+        Project associated with the reference.
     department : str
         Department associated with the reference.
     loaded_at : datetime
@@ -43,6 +45,7 @@ class Reference(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
     reference_id: Mapped[int] = mapped_column(Integer, unique=True)
     reference_description: Mapped[str] = mapped_column(String, nullable=True)
+    project: Mapped[str] = mapped_column(String(50), nullable=True)
     department: Mapped[str] = mapped_column(String(50), nullable=True)
     loaded_at: Mapped[datetime] = mapped_column(
         DateTime, default_factory=datetime.now, init=False
@@ -148,6 +151,44 @@ class User(Base):
     )
     assessment_usabilities_relation: Mapped[list["AssessmentUsability"]] = relationship(
         back_populates="user_relation", init=False
+    )
+    user_access_relation: Mapped[list["UserAccess"]] = relationship(
+        back_populates="user_relation", init=False
+    )
+
+
+class UserAccess(Base):
+    """Table that stores user access information.
+
+    Attributes
+    ----------
+    id : int
+        Primary key.
+    user_id : int
+        Foreign key linking to the user table.
+    project : str
+        The project the user has access to.
+    department : str
+        The department the user has access to.
+    """
+
+    __tablename__ = "user_access"
+
+    __table_args__ = (
+        UniqueConstraint(
+            "user_id", "project", "department", name="uq_user_project_department"
+        ),
+        {"schema": "llm_eval"},
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True, init=False)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey(User.id), init=False)
+    project: Mapped[str] = mapped_column(String(50))
+    department: Mapped[str] = mapped_column(String(50))
+
+    # Relationships
+    user_relation: Mapped["User"] = relationship(
+        back_populates="user_access_relation", init=False
     )
 
 

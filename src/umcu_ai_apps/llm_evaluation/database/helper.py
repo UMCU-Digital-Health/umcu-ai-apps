@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 
 import flask
@@ -15,7 +16,10 @@ from umcu_ai_apps.llm_evaluation.database.models import (
     Marking,
     Reference,
     User,
+    UserAccess,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def _get_user_id(session: Session) -> int:
@@ -31,7 +35,8 @@ def _get_user_id(session: Session) -> int:
     if user is None:
         user = User(email=email)
         session.add(user)
-        session.flush()
+        session.commit()
+        logger.info(f"User {user.email} added")
     return user.id
 
 
@@ -44,16 +49,27 @@ def load_dropdown_options(session_factory: sessionmaker) -> list[dict]:
         SQLAlchemy session factory used to open a database session.
     """
     with session_factory() as session:
-        refs = session.execute(select(Reference)).scalars().all()
-        return [
-            {
-                "label": (f"{r.reference_id} — {r.reference_description or ''}").strip(
-                    " —"
-                ),
-                "value": r.id,
-            }
-            for r in refs
-        ]
+        user_id = _get_user_id(session)
+        refs = (
+            session.execute(
+                select(Reference).where(
+                    Reference.project == UserAccess.project,
+                    Reference.department == UserAccess.department,
+                    UserAccess.user_id == user_id,
+                )
+            )
+            .scalars()
+            .all()
+        )
+    return [
+        {
+            "label": (f"{r.reference_id} — {r.reference_description or ''}").strip(
+                " —"
+            ),
+            "value": r.id,
+        }
+        for r in refs
+    ]
 
 
 def load_reference(session_factory: sessionmaker, ref_id: int) -> ReferenceData:
@@ -75,7 +91,15 @@ def load_reference(session_factory: sessionmaker, ref_id: int) -> ReferenceData:
         LLM response, internal IDs, and markings.
     """
     with session_factory() as session:
-        ref = session.get(Reference, ref_id)
+        user_id = _get_user_id(session)
+        ref = session.execute(
+            select(Reference).where(
+                Reference.id == ref_id,
+                Reference.project == UserAccess.project,
+                Reference.department == UserAccess.department,
+                UserAccess.user_id == user_id,
+            )
+        ).scalar_one_or_none()
         if ref is None:
             raise ValueError(f"Reference with id {ref_id} not found.")
 
@@ -91,25 +115,25 @@ def load_reference(session_factory: sessionmaker, ref_id: int) -> ReferenceData:
             .scalars()
             .all()
         )
-        return ReferenceData(
-            context=context.context_text,
-            llm=eval_item.llm_response,
-            evaluation_item_id=eval_item.id,
-            markings=[
-                MarkingData(
-                    id=m.id,
-                    sel=Selection(
-                        text=m.marking_text,
-                        start=m.marking_start,
-                        end=m.marking_end,
-                        type=m.marking_type,
-                    ),
-                    is_severe=m.is_severe,
-                    comment=m.comment or "",
-                )
-                for m in db_markings
-            ],
-        )
+    return ReferenceData(
+        context=context.context_text,
+        llm=eval_item.llm_response,
+        evaluation_item_id=eval_item.id,
+        markings=[
+            MarkingData(
+                id=m.id,
+                sel=Selection(
+                    text=m.marking_text,
+                    start=m.marking_start,
+                    end=m.marking_end,
+                    type=m.marking_type,
+                ),
+                is_severe=m.is_severe,
+                comment=m.comment or "",
+            )
+            for m in db_markings
+        ],
+    )
 
 
 def save_marking_to_db(
@@ -228,7 +252,16 @@ def load_usability_score(session_factory: sessionmaker, ref_id: int) -> int | No
         The usability score, or ``None`` if the item hasn't been rated yet.
     """
     with session_factory() as session:
-        ref = session.get(Reference, ref_id)
+        user_id = _get_user_id(session)
+        ref = session.execute(
+            select(Reference).where(
+                Reference.id == ref_id,
+                Reference.project == UserAccess.project,
+                Reference.department == UserAccess.department,
+                UserAccess.user_id == user_id,
+            )
+        ).scalar_one_or_none()
+
         if ref is None:
             return None
 

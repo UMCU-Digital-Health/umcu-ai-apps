@@ -63,9 +63,8 @@ app = Dash(
     assets_folder=str(Path(__file__).parent / "dash"),
     external_stylesheets=[dbc.themes.BOOTSTRAP],
 )
-dropdown_options = load_dropdown_options(SESSIONMAKER)
 
-app.layout = create_layout(dropdown_options)
+app.layout = create_layout([])
 
 app.clientside_callback(
     ClientsideFunction(namespace="clientside", function_name="capture_selection"),
@@ -76,6 +75,17 @@ app.clientside_callback(
     Input("wording-btn", "n_clicks"),
     prevent_initial_call=True,
 )
+
+
+# Callback that fills the ref_dropdown after the app is loaded
+@app.callback(
+    Output("ref-dropdown", "options"),
+    Output("ref-dropdown", "value"),
+)
+def fill_ref_dropdown():
+    options = load_dropdown_options(SESSIONMAKER)
+    value = options[0]["value"] if options else None
+    return options, value
 
 
 @app.callback(
