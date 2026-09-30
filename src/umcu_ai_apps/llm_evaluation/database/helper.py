@@ -1,8 +1,9 @@
+import logging
 from datetime import datetime
 
 import flask
 from sqlalchemy import select
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import sessionmaker
 from umcu_ai_utils.dash.authentication import get_user_email
 
 from umcu_ai_apps.llm_evaluation.dash.dataclasses import (
@@ -15,48 +16,69 @@ from umcu_ai_apps.llm_evaluation.database.models import (
     Marking,
     Reference,
     User,
+    UserAccess,
 )
 
+logger = logging.getLogger(__name__)
 
-def _get_user_id(session: Session) -> int:
+
+def get_user_id(session_factory: sessionmaker) -> int:
     """Return the DB id for the current user
-
-    Parameters
-    ----------
-    session : Session
-        SQLAlchemy session used to interact with the database.
-    """
-    email = get_user_email(flask.request)
-    user = session.execute(select(User).where(User.email == email)).scalar_one_or_none()
-    if user is None:
-        user = User(email=email)
-        session.add(user)
-        session.flush()
-    return user.id
-
-
-def load_dropdown_options(session_factory: sessionmaker) -> list[dict]:
-    """Query reference labels for the reference dropdown.
 
     Parameters
     ----------
     session_factory : sessionmaker
         SQLAlchemy session factory used to open a database session.
     """
+    email = get_user_email(flask.request)
     with session_factory() as session:
-        refs = session.execute(select(Reference)).scalars().all()
-        return [
-            {
-                "label": (f"{r.reference_id} — {r.reference_description or ''}").strip(
-                    " —"
-                ),
-                "value": r.id,
-            }
-            for r in refs
-        ]
+        user = session.execute(
+            select(User).where(User.email == email)
+        ).scalar_one_or_none()
+        if user is None:
+            user = User(email=email)
+            session.add(user)
+            session.commit()
+            logger.info(f"User {user.email} added")
+        return user.id
 
 
-def load_reference(session_factory: sessionmaker, ref_id: int) -> ReferenceData:
+def load_dropdown_options(session_factory: sessionmaker, user_id: int) -> list[dict]:
+    """Query reference labels for the reference dropdown.
+
+    Parameters
+    ----------
+    session_factory : sessionmaker
+        SQLAlchemy session factory used to open a database session.
+    user_id : int
+        The ID of the current user.
+    """
+    with session_factory() as session:
+        refs = (
+            session.execute(
+                select(Reference).where(
+                    Reference.project == UserAccess.project,
+                    Reference.department == UserAccess.department,
+                    UserAccess.user_id == user_id,
+                )
+            )
+            .scalars()
+            .all()
+        )
+    return [
+        {
+            "label": (f"{r.reference_id} — {r.reference_description or ''}").strip(
+                " —"
+            ),
+            "value": r.id,
+        }
+        for r in refs
+    ]
+
+
+def load_reference(
+    session_factory: sessionmaker, ref_id: int, user_id: int
+) -> ReferenceData:
     """Load full data from the database for a specific reference with ref_id.
 
     Returns context text, LLM response, internal IDs, and the markings.
@@ -67,6 +89,8 @@ def load_reference(session_factory: sessionmaker, ref_id: int) -> ReferenceData:
         SQLAlchemy session factory used to open a database session.
     ref_id : int
         The Reference.id to load.
+    user_id : int
+        The ID of the current user.
 
     Returns
     -------
@@ -75,7 +99,14 @@ def load_reference(session_factory: sessionmaker, ref_id: int) -> ReferenceData:
         LLM response, internal IDs, and markings.
     """
     with session_factory() as session:
-        ref = session.get(Reference, ref_id)
+        ref = session.execute(
+            select(Reference).where(
+                Reference.id == ref_id,
+                Reference.project == UserAccess.project,
+                Reference.department == UserAccess.department,
+                UserAccess.user_id == user_id,
+            )
+        ).scalar_one_or_none()
         if ref is None:
             raise ValueError(f"Reference with id {ref_id} not found.")
 
@@ -91,30 +122,31 @@ def load_reference(session_factory: sessionmaker, ref_id: int) -> ReferenceData:
             .scalars()
             .all()
         )
-        return ReferenceData(
-            context=context.context_text,
-            llm=eval_item.llm_response,
-            evaluation_item_id=eval_item.id,
-            markings=[
-                MarkingData(
-                    id=m.id,
-                    sel=Selection(
-                        text=m.marking_text,
-                        start=m.marking_start,
-                        end=m.marking_end,
-                        type=m.marking_type,
-                    ),
-                    is_severe=m.is_severe,
-                    comment=m.comment or "",
-                )
-                for m in db_markings
-            ],
-        )
+    return ReferenceData(
+        context=context.context_text,
+        llm=eval_item.llm_response,
+        evaluation_item_id=eval_item.id,
+        markings=[
+            MarkingData(
+                id=m.id,
+                sel=Selection(
+                    text=m.marking_text,
+                    start=m.marking_start,
+                    end=m.marking_end,
+                    type=m.marking_type,
+                ),
+                is_severe=m.is_severe,
+                comment=m.comment or "",
+            )
+            for m in db_markings
+        ],
+    )
 
 
 def save_marking_to_db(
     session_factory: sessionmaker,
     ref_id: int,
+    user_id: int,
     sel: Selection,
 ) -> None:
     """Insert a new marking into the database.
@@ -125,6 +157,8 @@ def save_marking_to_db(
         SQLAlchemy session factory used to open a database session.
     ref_id : int
         The Reference.id this marking belongs to.
+    user_id : int
+        The ID of the current user.
     sel : Selection
         Selection object with "text", "start", "end", and "type" attributes.
     """
@@ -133,7 +167,7 @@ def save_marking_to_db(
         if ref is None:
             raise ValueError(f"Reference with id {ref_id} not found.")
         marking = Marking(
-            user_id=_get_user_id(session),
+            user_id=user_id,
             evaluation_item_id=ref.evaluation_item_relation.id,
             context_id=ref.context_relation.id,
             marking_type=sel.type,
@@ -212,7 +246,9 @@ def update_marking_comment(
             session.commit()
 
 
-def load_usability_score(session_factory: sessionmaker, ref_id: int) -> int | None:
+def load_usability_score(
+    session_factory: sessionmaker, ref_id: int, user_id: int
+) -> int | None:
     """Fetch the shared usability score for a reference, if one exists.
 
     Parameters
@@ -221,6 +257,8 @@ def load_usability_score(session_factory: sessionmaker, ref_id: int) -> int | No
         SQLAlchemy session factory used to open a database session.
     ref_id : int
         The Reference.id to look up.
+    user_id : int
+        The ID of the current user.
 
     Returns
     -------
@@ -228,7 +266,15 @@ def load_usability_score(session_factory: sessionmaker, ref_id: int) -> int | No
         The usability score, or ``None`` if the item hasn't been rated yet.
     """
     with session_factory() as session:
-        ref = session.get(Reference, ref_id)
+        ref = session.execute(
+            select(Reference).where(
+                Reference.id == ref_id,
+                Reference.project == UserAccess.project,
+                Reference.department == UserAccess.department,
+                UserAccess.user_id == user_id,
+            )
+        ).scalar_one_or_none()
+
         if ref is None:
             return None
 
@@ -246,6 +292,7 @@ def save_usability_assessment(
     session_factory: sessionmaker,
     evaluation_item_id: int,
     usability_score: int,
+    user_id: int,
 ) -> None:
     """Create or update the usability score for an item.
 
@@ -259,9 +306,10 @@ def save_usability_assessment(
         The EvaluationItem.id being assessed.
     usability_score : int
         The usability score, from 1 to 5.
+    user_id : int
+        The ID of the current user.
     """
     with session_factory() as session:
-        user_id = _get_user_id(session)
         assessment = session.execute(
             select(AssessmentUsability).where(
                 AssessmentUsability.evaluation_item_id == evaluation_item_id,

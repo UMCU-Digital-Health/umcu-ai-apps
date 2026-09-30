@@ -39,6 +39,7 @@ from umcu_ai_apps.llm_evaluation.dash.helper import (
 from umcu_ai_apps.llm_evaluation.dash.layout import create_layout
 from umcu_ai_apps.llm_evaluation.database.helper import (
     delete_marking_from_db,
+    get_user_id,
     load_dropdown_options,
     load_usability_score,
     save_marking_to_db,
@@ -63,9 +64,7 @@ app = Dash(
     assets_folder=str(Path(__file__).parent / "dash"),
     external_stylesheets=[dbc.themes.BOOTSTRAP],
 )
-dropdown_options = load_dropdown_options(SESSIONMAKER)
-
-app.layout = create_layout(dropdown_options)
+app.layout = create_layout
 
 app.clientside_callback(
     ClientsideFunction(namespace="clientside", function_name="capture_selection"),
@@ -79,6 +78,19 @@ app.clientside_callback(
 
 
 @app.callback(
+    Output("ref-dropdown", "options"),
+    Output("ref-dropdown", "value"),
+    Output("current_user", "data"),
+)
+def page_load():
+    """Callback to fill the reference dropdown and set the current user on page load."""
+    current_user = get_user_id(SESSIONMAKER)
+    options = load_dropdown_options(SESSIONMAKER, current_user)
+    value = options[0]["value"] if options else None
+    return options, value, current_user
+
+
+@app.callback(
     Output("context-text", "children"),
     Output("llm-text", "children"),
     Output("table-container", "children"),
@@ -88,9 +100,10 @@ app.clientside_callback(
     Input("selection-store", "data"),
     Input("ref-dropdown", "value"),
     Input({"type": "delete-btn", "index": ALL}, "n_clicks"),
+    State("current_user", "data"),
 )
 def handle_save(
-    json_selection: str, reference_id: int, delete_clicks: list[int]
+    json_selection: str, reference_id: int, delete_clicks: list[int], current_user: int
 ) -> tuple:
     """Process a new reference selection, a new marking, or a delete button click.
 
@@ -127,10 +140,10 @@ def handle_save(
     # Initial load or new reference selected
     if not triggered or triggered == "ref-dropdown":
         return (
-            *full_rebuild(SESSIONMAKER, reference_id),
+            *full_rebuild(SESSIONMAKER, reference_id, current_user),
             "",
             "",
-            load_usability_score(SESSIONMAKER, reference_id),
+            load_usability_score(SESSIONMAKER, reference_id, current_user),
         )
     # Handle a new selection being saved
     elif triggered == "selection-store":
@@ -153,7 +166,7 @@ def handle_save(
             )
         selection_data = Selection(**selection_data)
 
-        markings = load_reference(SESSIONMAKER, reference_id).markings
+        markings = load_reference(SESSIONMAKER, reference_id, current_user).markings
         if is_duplicate(selection_data, markings):
             msg = html.Span("ℹ Al gemarkeerd.", style={"color": "#3b82f6"})
             if selection_data.type == "missing":
@@ -162,11 +175,21 @@ def handle_save(
                 return *([no_update] * 3), no_update, msg, no_update
 
         logger.info(f"Saving new marking with type: {selection_data.type}")
-        save_marking_to_db(SESSIONMAKER, reference_id, selection_data)
+        save_marking_to_db(SESSIONMAKER, reference_id, current_user, selection_data)
 
         if selection_data.type == "missing":
-            return (*full_rebuild(SESSIONMAKER, reference_id), "", no_update, no_update)
-        return (*full_rebuild(SESSIONMAKER, reference_id), no_update, "", no_update)
+            return (
+                *full_rebuild(SESSIONMAKER, reference_id, current_user),
+                "",
+                no_update,
+                no_update,
+            )
+        return (
+            *full_rebuild(SESSIONMAKER, reference_id, current_user),
+            no_update,
+            "",
+            no_update,
+        )
     # Handle a delete button being clicked
     else:
         if not any(delete_clicks):
@@ -175,7 +198,7 @@ def handle_save(
         delete_marking_from_db(SESSIONMAKER, triggered["index"])
         logger.info(f"Deleted marking {triggered['index']}")
         return (
-            *full_rebuild(SESSIONMAKER, reference_id),
+            *full_rebuild(SESSIONMAKER, reference_id, current_user),
             no_update,
             no_update,
             no_update,
@@ -229,8 +252,9 @@ def handle_comment_change(values: list[str]) -> None:
 @app.callback(
     Input("usability-score", "value"),
     State("ref-dropdown", "value"),
+    State("current_user", "data"),
 )
-def handle_usability_change(score: int | None, ref_id: int) -> None:
+def handle_usability_change(score: int | None, ref_id: int, current_user: int) -> None:
     """Persist the current user's usability score as soon as it changes.
 
     Parameters
@@ -243,12 +267,14 @@ def handle_usability_change(score: int | None, ref_id: int) -> None:
     if not score:
         return
 
-    stored_score = load_usability_score(SESSIONMAKER, ref_id)
+    stored_score = load_usability_score(SESSIONMAKER, ref_id, current_user)
     if score == stored_score:
         return
 
-    reference_data = load_reference(SESSIONMAKER, ref_id)
-    save_usability_assessment(SESSIONMAKER, reference_data.evaluation_item_id, score)
+    reference_data = load_reference(SESSIONMAKER, ref_id, current_user)
+    save_usability_assessment(
+        SESSIONMAKER, reference_data.evaluation_item_id, score, current_user
+    )
     logger.info(f"Saved usability score {score}")
 
 
