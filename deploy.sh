@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+set -e
+
 for VAR in PERSONAL_API_KEY MANIFEST_FILE_LLM_EVAL APP_ID_acc APP_ID_prod APP_NAME_acc APP_NAME_prod
 do
     if [[ -z ${!VAR+x} ]]; then

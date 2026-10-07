@@ -12,6 +12,6 @@ Test if the proposed change does not break functionality:
 - [ ] The proposed change works locally
 - [ ] The proposed change is deployed to acc and works as expected:
   - [ ] The acc dashboard works after the proposed change
-  - [ ] The acc dashboard succesfully reads and writes data to the ACC database 
+  - [ ] The acc dashboard successfully reads and writes data to the ACC database 
 
 Link to the acc dashboard: https://rsc.ds.umcutrecht.nl/content/489a4cbf-10bb-49cd-9ee5-3a39fac081ac
