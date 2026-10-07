@@ -1,6 +1,9 @@
 # Editor files
 .vscode
 
+# RSConnect files
+rsconnect-python
+
 # Data files
 *.parquet
 *.pickle

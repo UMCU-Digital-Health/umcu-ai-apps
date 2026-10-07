@@ -4,9 +4,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "umcu_ai_apps"
-version = "1.1.0"
+version = "1.1.1"
 authors = [
-    { name = "Laura Veerhoek", email = "l.p.veerhoek@umcutrecht.nl" },
+    { name = "UMCU Team AI", email = "datascience@umcutrecht.nl" },
 ]
 description = "General repository for general apps made by the UMC Utrecht AI team."
 readme = "README.md"
@@ -19,6 +19,7 @@ dependencies = [
     "dash>=4.4.1",
     "dash-bootstrap-components>=2.0.4",
     "dotenv>=0.9.9",
+    "pymssql>=2.4.3",
     "rich>=15.0.0",
     "sqlalchemy>=2.0.52",
     "umcu-ai-utils[dash]>=0.3.0",

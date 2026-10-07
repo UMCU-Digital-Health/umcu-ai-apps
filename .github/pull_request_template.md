@@ -7,14 +7,11 @@ Link the issues solved by this PR like below:
 fixes AB#0  <!-- Replace 0 by PBI number in DevOps -->
 
 ## Integration tests
-Test if the proposed change does not break the pipeline or API:
+Test if the proposed change does not break functionality:
 
 - [ ] The proposed change works locally
-- [ ] The proposed change is deployed to test and works as expected:
-  - [ ] The test pipeline successfully retrieves data from dataplatform
-  - [ ] The test API successfully receives data from the test pipeline and processes the data
-  - [ ] The test API successfully writes the data to the test database
-- [ ] The dashboard(s) work after the proposed change
+- [ ] The proposed change is deployed to acc and works as expected:
+  - [ ] The acc dashboard works after the proposed change
+  - [ ] The acc dashboard successfully reads and writes data to the ACC database 
 
-Link to the test API: [link](insert link here)
-Link to the test pipeline: [link](insert link here)
+Link to the acc dashboard: https://rsc.ds.umcutrecht.nl/content/489a4cbf-10bb-49cd-9ee5-3a39fac081ac

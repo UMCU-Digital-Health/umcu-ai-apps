@@ -1,0 +1,107 @@
+{
+  "version": 1,
+  "locale": "C.UTF-8",
+  "metadata": {
+    "appmode": "python-dash",
+    "entrypoint": "src.umcu_ai_apps.llm_evaluation.app:app"
+  },
+  "python": {
+    "version": "3.14.6",
+    "package_manager": {
+      "name": "pip",
+      "version": "26.2.1",
+      "package_file": "requirements.txt"
+    }
+  },
+  "environment": {
+    "python": {
+      "requires": ">=3.12"
+    }
+  },
+  "files": {
+    "requirements.txt": {
+      "checksum": "f1da46dbb395eadd3806fbe9f1b82b21"
+    },
+    ".env_example": {
+      "checksum": "13da055abb5fd412888ccab71b0d34ac"
+    },
+    ".gitignore": {
+      "checksum": "4ad025a675218d47f082b7642bccf54a"
+    },
+    "CHANGELOG.md": {
+      "checksum": "a00c74bbd0f56e1175f4a937765e8d7b"
+    },
+    "README.md": {
+      "checksum": "8bf42b6c67235bdefcc98c8661f00510"
+    },
+    "config/logging.plain.toml": {
+      "checksum": "1e2bf8d9667d4ff203d0ef220854429c"
+    },
+    "config/logging.rich.toml": {
+      "checksum": "072610fbdbc892960b89ad364cae64db"
+    },
+    "data/processed/.gitkeep": {
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "data/processed/llm_evaluation_data_example.csv": {
+      "checksum": "3f09f61704efa1039a8da18d48b4f223"
+    },
+    "data/raw/.gitkeep": {
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "deploy.sh": {
+      "checksum": "9936fb5d8973ea453a665cd66df400e1"
+    },
+    "manifest_llm_eval.json": {
+      "checksum": "2b9b484c157bcc628e63a39b6d314de4"
+    },
+    "pyproject.toml": {
+      "checksum": "2fb7ba53b293c263167ee87fae7db629"
+    },
+    "src/umcu_ai_apps/__init__.py": {
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "src/umcu_ai_apps/config.py": {
+      "checksum": "f7cbf8b37b1a57f9769ea316dc336d38"
+    },
+    "src/umcu_ai_apps/llm_evaluation/__init__.py": {
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "src/umcu_ai_apps/llm_evaluation/app.py": {
+      "checksum": "64d8a366216f2289becc1c0006e06a15"
+    },
+    "src/umcu_ai_apps/llm_evaluation/cli.py": {
+      "checksum": "43c8ccce439776b11cf4a0c9edd7ca72"
+    },
+    "src/umcu_ai_apps/llm_evaluation/dash/__init__.py": {
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "src/umcu_ai_apps/llm_evaluation/dash/callbacks.js": {
+      "checksum": "42bfda3af708e679a94c3a604e015fc4"
+    },
+    "src/umcu_ai_apps/llm_evaluation/dash/dataclasses.py": {
+      "checksum": "0c3253126a4d8aa1332bd1d41130337e"
+    },
+    "src/umcu_ai_apps/llm_evaluation/dash/helper.py": {
+      "checksum": "f34066b395e6ceea5eda8bfff5ecdd73"
+    },
+    "src/umcu_ai_apps/llm_evaluation/dash/layout.py": {
+      "checksum": "3bceb59666e6f3e2aedf7bbc3f01ed5a"
+    },
+    "src/umcu_ai_apps/llm_evaluation/database/__init__.py": {
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "src/umcu_ai_apps/llm_evaluation/database/helper.py": {
+      "checksum": "224e1c9f2246b7c7e07e6a3ae3713ca1"
+    },
+    "src/umcu_ai_apps/llm_evaluation/database/models.py": {
+      "checksum": "81cc97a81a1697d12c5bd9716acfd006"
+    },
+    "uv.lock": {
+      "checksum": "1f8f7903c37705cd6b6fed2d760793df"
+    },
+    "write_manifest.sh": {
+      "checksum": "338d42e822637bd72357b36787db9bfb"
+    }
+  }
+}
