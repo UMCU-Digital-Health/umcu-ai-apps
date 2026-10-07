@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "umcu_ai_apps"
 version = "1.1.1"
 authors = [
-    { name = "Laura Veerhoek", email = "l.p.veerhoek@umcutrecht.nl" },
+    { name = "UMCU Team AI", email = "datascience@umcutrecht.nl" },
 ]
 description = "General repository for general apps made by the UMC Utrecht AI team."
 readme = "README.md"
