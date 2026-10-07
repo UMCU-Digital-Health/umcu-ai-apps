@@ -7,5 +7,9 @@ COMMAND="rsconnect write-manifest dash \
 --exclude docs --exclude \"**/*.db\" --exclude \"**/*.pyc\" \
 --exclude \"**/*.egg-info/*\""
 
+# Generate requirements file
+uv export --frozen -q --no-hashes --no-dev -o requirements.txt
+
 # Execute the command
 eval $COMMAND .
+rm requirements.txt

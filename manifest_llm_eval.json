@@ -20,21 +20,24 @@
   },
   "files": {
     "requirements.txt": {
-      "checksum": "f7f1fa8d6d20b93079cb869843edbd14"
+      "checksum": "f1da46dbb395eadd3806fbe9f1b82b21"
     },
     ".env_example": {
-      "checksum": "e4f0d7607aa7d3b2418268015e0e9b39"
+      "checksum": "13da055abb5fd412888ccab71b0d34ac"
     },
     ".gitignore": {
-      "checksum": "ecddf89cdc7f01bd0867fa50b796abe6"
+      "checksum": "4ad025a675218d47f082b7642bccf54a"
     },
     "CHANGELOG.md": {
-      "checksum": "b1cf394aee65c2f2a5d618a7b23a4795"
+      "checksum": "a00c74bbd0f56e1175f4a937765e8d7b"
     },
     "README.md": {
       "checksum": "8bf42b6c67235bdefcc98c8661f00510"
     },
-    "config/logging_config.toml": {
+    "config/logging.plain.toml": {
+      "checksum": "1e2bf8d9667d4ff203d0ef220854429c"
+    },
+    "config/logging.rich.toml": {
       "checksum": "072610fbdbc892960b89ad364cae64db"
     },
     "data/processed/.gitkeep": {
@@ -47,16 +50,19 @@
       "checksum": "d41d8cd98f00b204e9800998ecf8427e"
     },
     "deploy.sh": {
-      "checksum": "78841b3c1452f11b244be89bf09f2912"
+      "checksum": "9936fb5d8973ea453a665cd66df400e1"
+    },
+    "manifest_llm_eval.json": {
+      "checksum": "2b9b484c157bcc628e63a39b6d314de4"
     },
     "pyproject.toml": {
-      "checksum": "75a5e723c4abf28b72fc5f39895863bd"
+      "checksum": "2fb7ba53b293c263167ee87fae7db629"
     },
     "src/umcu_ai_apps/__init__.py": {
       "checksum": "d41d8cd98f00b204e9800998ecf8427e"
     },
     "src/umcu_ai_apps/config.py": {
-      "checksum": "9d04859579daa48ddb90eb92612e9421"
+      "checksum": "f7cbf8b37b1a57f9769ea316dc336d38"
     },
     "src/umcu_ai_apps/llm_evaluation/__init__.py": {
       "checksum": "d41d8cd98f00b204e9800998ecf8427e"
@@ -92,10 +98,10 @@
       "checksum": "81cc97a81a1697d12c5bd9716acfd006"
     },
     "uv.lock": {
-      "checksum": "8eac4b79e1f4fdd29f378d936f2e9d7b"
+      "checksum": "1f8f7903c37705cd6b6fed2d760793df"
     },
     "write_manifest.sh": {
-      "checksum": "962ff4e6cb5520eb9707362768ad7ca1"
+      "checksum": "338d42e822637bd72357b36787db9bfb"
     }
   }
 }
