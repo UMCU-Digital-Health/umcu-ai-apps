@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-10-07
+
+### Changed
+- Updated files needed for deployment (write_manifest, deploy, manifest files etc.)
+- requirements.txt is no longer kept in version control, but created and removed during deployment based on uv.lock
+
+### Added
+- Added dependency for MS SQL server now that we have a working service account
+- Updated other dependencies
+
 ## [1.1.0] - 2026-09-16
 
 ### Added
