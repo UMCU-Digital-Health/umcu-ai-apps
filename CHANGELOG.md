@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.2] - 2026-10-09
+
+### Changed
+- Changed the size of the model name from 10 to 50
+- Increased the max size of the csv ready to be loaded into the database via cli. 
+- Fixed the new line showing in the llm_evaluation app
+- Made the height of the textboxes adjustable by the user.
+- Created a production environment
+
 ## [1.1.1] - 2026-10-07
 
 ### Changed
