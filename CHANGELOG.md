@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.2] - 2026-10-13
+
+### Added
+- Added documentation as mkdocs to help users with the dashboard
+
+### Removed
+- Removed datasetcard and modelcard since this is not applicable to this repo
+
 ## [1.1.1] - 2026-10-07
 
 ### Changed
