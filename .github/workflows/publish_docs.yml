@@ -7,6 +7,9 @@ on:
     paths:
       - 'docs/**'
       - 'mkdocs.yml'
+      - '.github/workflows/publish_docs.yml'
+      - 'pyproject.toml'
+      - 'uv.lock'
   workflow_dispatch:
 
 permissions:
