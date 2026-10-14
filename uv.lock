@@ -1858,9 +1858,9 @@ wheels = [
 
 [[package]]
 name = "umcu-ai-apps"
-version = "1.1.3"
+version = "1.1.4"
 source = { editable = "." }
-default-groups = ["dev", "lint"]
+default-groups = ["dev", "docs", "lint"]
 dependencies = [
     { name = "dash" },
     { name = "dash-bootstrap-components" },
@@ -1874,12 +1874,14 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "ipykernel" },
-    { name = "mkdocs" },
-    { name = "mkdocs-material" },
     { name = "nbstripout" },
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "rsconnect-python" },
+]
+docs = [
+    { name = "mkdocs" },
+    { name = "mkdocs-material" },
 ]
 lint = [
     { name = "ruff" },
@@ -1899,12 +1901,14 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "ipykernel", specifier = ">=6.29.2" },
-    { name = "mkdocs", specifier = "<2.0" },
-    { name = "mkdocs-material", specifier = ">=9.7.7" },
     { name = "nbstripout", specifier = ">=0.7.1" },
     { name = "pytest", specifier = ">=8.0.1" },
     { name = "pytest-cov", specifier = ">=5.0.0" },
     { name = "rsconnect-python", specifier = ">=1.24.0" },
+]
+docs = [
+    { name = "mkdocs", specifier = "<2.0" },
+    { name = "mkdocs-material", specifier = ">=9.7.7" },
 ]
 lint = [{ name = "ruff", specifier = ">=0.7.1" }]
 
