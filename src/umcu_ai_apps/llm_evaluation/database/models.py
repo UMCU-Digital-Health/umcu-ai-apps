@@ -83,7 +83,7 @@ class EvaluationItem(Base):
         Integer, ForeignKey(Reference.id), unique=True, init=False
     )
     llm_response: Mapped[str]
-    model: Mapped[str] = mapped_column(String(10), nullable=True)
+    model: Mapped[str] = mapped_column(String(100), nullable=True)
 
     # Relationships
     reference_relation: Mapped["Reference"] = relationship(

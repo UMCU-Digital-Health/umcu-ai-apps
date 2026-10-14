@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "umcu_ai_apps"
-version = "1.1.1"
+version = "1.1.2"
 authors = [
     { name = "UMCU Team AI", email = "datascience@umcutrecht.nl" },
 ]
