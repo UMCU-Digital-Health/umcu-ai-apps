@@ -26,3 +26,5 @@ nav:
   - Home: index.md
   - Gebruikershandleiding:
       - LLM Evaluatie Applicatie: user-guide/llm-evaluation.md
+  - Developers:
+      - CLI-tools: developer-guide/cli.md

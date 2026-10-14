@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Added documentation as mkdocs to help users with the dashboard
+- Added developer documentation for the CLI tools (docs/developer-guide/cli.md)
+
+### Changed
+- Updated README with quick start, CLI overview, development and deployment instructions
 
 ### Removed
 - Removed datasetcard and modelcard since this is not applicable to this repo
