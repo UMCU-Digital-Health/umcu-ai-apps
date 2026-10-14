@@ -93,11 +93,14 @@ def create_layout() -> html.Div:
                                         className="p-3 bg-light border rounded",
                                         style={
                                             "height": "400px",
+                                            "minHeight": "150px",
+                                            "resize": "vertical",
                                             "overflowY": "auto",
                                             "fontSize": "1.05rem",
                                             "lineHeight": "1.8",
                                             "userSelect": "text",
                                             "cursor": "text",
+                                            "whiteSpace": "pre-wrap",
                                         },
                                     ),
                                     html.Div(
@@ -190,11 +193,14 @@ def create_layout() -> html.Div:
                                         className="p-3 bg-light border rounded",
                                         style={
                                             "height": "400px",
+                                            "minHeight": "150px",
+                                            "resize": "vertical",
                                             "overflowY": "auto",
                                             "fontSize": "1.05rem",
                                             "lineHeight": "1.8",
                                             "userSelect": "text",
                                             "cursor": "text",
+                                            "whiteSpace": "pre-wrap",
                                         },
                                     ),
                                     html.Div(

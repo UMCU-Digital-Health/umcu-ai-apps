@@ -7,6 +7,7 @@ import argparse
 import csv
 import logging
 import os
+import sys
 from pathlib import Path
 from typing import Literal, cast
 
@@ -26,6 +27,8 @@ from umcu_ai_apps.llm_evaluation.database.models import (
     User,
     UserAccess,
 )
+
+csv.field_size_limit(sys.maxsize)
 
 logger = logging.getLogger(__name__)
 
