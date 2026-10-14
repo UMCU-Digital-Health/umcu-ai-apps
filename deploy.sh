@@ -25,7 +25,7 @@ else
 fi
 
 # Export the current Python environment's dependencies to a requirements.txt file
-uv export --frozen -q --no-hashes --no-dev -o requirements.txt
+uv export --frozen -q --no-hashes --no-default-groups -o requirements.txt
 
 if [[ $APP_ID == '' ]]; then
     echo "New deployment selected. Not using stored APP_ID in .env."
