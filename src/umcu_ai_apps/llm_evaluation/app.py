@@ -30,13 +30,13 @@ from sqlalchemy.orm import sessionmaker
 from umcu_ai_utils.database_connection import get_engine
 
 from umcu_ai_apps.config import configure_logging
-from umcu_ai_apps.llm_evaluation.dash.dataclasses import Selection
-from umcu_ai_apps.llm_evaluation.dash.helper import (
+from umcu_ai_apps.llm_evaluation.dashboard.dataclasses import Selection
+from umcu_ai_apps.llm_evaluation.dashboard.helper import (
     full_rebuild,
     is_duplicate,
     load_reference,
 )
-from umcu_ai_apps.llm_evaluation.dash.layout import create_layout
+from umcu_ai_apps.llm_evaluation.dashboard.layout import create_layout
 from umcu_ai_apps.llm_evaluation.database.helper import (
     delete_marking_from_db,
     get_user_id,
