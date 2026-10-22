@@ -4,7 +4,7 @@ import dash_bootstrap_components as dbc
 from dash import dcc, html
 from sqlalchemy.orm import sessionmaker
 
-from umcu_ai_apps.llm_evaluation.dash.dataclasses import (
+from umcu_ai_apps.llm_evaluation.dashboard.dataclasses import (
     HighlightStyle,
     MarkingData,
     Selection,

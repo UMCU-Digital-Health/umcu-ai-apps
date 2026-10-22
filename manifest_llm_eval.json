@@ -73,19 +73,19 @@
     "src/umcu_ai_apps/llm_evaluation/cli.py": {
       "checksum": "43c8ccce439776b11cf4a0c9edd7ca72"
     },
-    "src/umcu_ai_apps/llm_evaluation/dash/__init__.py": {
+    "src/umcu_ai_apps/llm_evaluation/dashboard/__init__.py": {
       "checksum": "d41d8cd98f00b204e9800998ecf8427e"
     },
-    "src/umcu_ai_apps/llm_evaluation/dash/callbacks.js": {
+    "src/umcu_ai_apps/llm_evaluation/dashboard/callbacks.js": {
       "checksum": "42bfda3af708e679a94c3a604e015fc4"
     },
-    "src/umcu_ai_apps/llm_evaluation/dash/dataclasses.py": {
+    "src/umcu_ai_apps/llm_evaluation/dashboard/dataclasses.py": {
       "checksum": "0c3253126a4d8aa1332bd1d41130337e"
     },
-    "src/umcu_ai_apps/llm_evaluation/dash/helper.py": {
+    "src/umcu_ai_apps/llm_evaluation/dashboard/helper.py": {
       "checksum": "f34066b395e6ceea5eda8bfff5ecdd73"
     },
-    "src/umcu_ai_apps/llm_evaluation/dash/layout.py": {
+    "src/umcu_ai_apps/llm_evaluation/dashboard/layout.py": {
       "checksum": "3bceb59666e6f3e2aedf7bbc3f01ed5a"
     },
     "src/umcu_ai_apps/llm_evaluation/database/__init__.py": {

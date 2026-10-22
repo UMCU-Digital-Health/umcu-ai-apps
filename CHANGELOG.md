@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [1.1.5] - 2026-10-21
+
+### Changed
+- Renamed folder dash/ to dashboard/ to prevent package errors regarding the dash package
+
+
 ## [1.1.4] - 2026-10-14
 
 ### Added

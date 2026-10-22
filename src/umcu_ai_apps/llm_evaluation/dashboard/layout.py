@@ -2,8 +2,8 @@ import dash_bootstrap_components as dbc
 from dash import dcc, html
 from umcu_ai_utils.dash.layout import get_navbar
 
-from umcu_ai_apps.llm_evaluation.dash.dataclasses import HighlightStyle
-from umcu_ai_apps.llm_evaluation.dash.helper import (
+from umcu_ai_apps.llm_evaluation.dashboard.dataclasses import HighlightStyle
+from umcu_ai_apps.llm_evaluation.dashboard.helper import (
     build_table,
 )
 
