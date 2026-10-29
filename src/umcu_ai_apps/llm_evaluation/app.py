@@ -61,7 +61,7 @@ SESSIONMAKER = sessionmaker(
 )
 app = Dash(
     __name__,
-    assets_folder=str(Path(__file__).parent / "dash"),
+    assets_folder=str(Path(__file__).parent / "dashboard"),
     external_stylesheets=[dbc.themes.BOOTSTRAP],
 )
 app.layout = create_layout
